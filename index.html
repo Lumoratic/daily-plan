@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Daily Plan</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#111827">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <style>
+    :root {
+      --bg-a: #111827;
+      --bg-b: #4f46e5;
+      --bg-c: #9333ea;
+      --card: #ffffff;
+      --ink: #111827;
+      --muted: #7c8293;
+      --line: #e9ecf2;
+      --high: #ff4d6d;
+      --medium: #ffb703;
+      --low: #2ec4b6;
+      --green: #20c997;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      min-height: 100vh;
+      padding: 9px;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 20% 5%, rgba(255,255,255,.25), transparent 28%),
+        linear-gradient(145deg, var(--bg-a), var(--bg-b) 48%, var(--bg-c));
+      overscroll-behavior: none;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 510px;
+      margin: auto;
+      border-radius: 25px;
+      padding: 10px;
+      background: rgba(255,255,255,.92);
+      box-shadow: 0 22px 55px rgba(0,0,0,.25);
+      backdrop-filter: blur(16px);
+    }
+
+    .hero {
+      color: white;
+      border-radius: 21px;
+      padding: 13px;
+      margin-bottom: 9px;
+      background:
+        radial-gradient(circle at 90% 10%, rgba(255,255,255,.28), transparent 26%),
+        linear-gradient(135deg, #111827, #312e81 55%, #7c3aed);
+    }
+
+    .hero-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 11px;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -1px;
+    }
+
+    .brand {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .4px;
+      color: #dbeafe;
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.16);
+      padding: 5px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .brand-link {
+      color: inherit;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .brand-link:active {
+      opacity: .75;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 86px 58px;
+      gap: 7px;
+      align-items: stretch;
+    }
+
+    .date-card {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 7px;
+      align-items: center;
+      border-radius: 15px;
+      padding: 7px 8px;
+      background: rgba(255,255,255,.13);
+      border: 1px solid rgba(255,255,255,.18);
+    }
+
+    .date-card input {
+      color-scheme: dark;
+      width: 100%;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      color: white;
+      background: transparent;
+      font-size: 12.5px;
+      font-weight: 750;
+    }
+
+    .weekday {
+      font-size: 12px;
+      font-weight: 900;
+      color: #c7d2fe;
+      white-space: nowrap;
+    }
+
+    .sort-box,
+    .reset-btn {
+      height: 36px;
+      border: 0;
+      outline: 0;
+      border-radius: 14px;
+      font-size: 11.5px;
+      font-weight: 850;
+    }
+
+    .sort-box {
+      color: white;
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.18);
+      padding: 0 5px;
+    }
+
+    .sort-box option {
+      color: #111827;
+    }
+
+    .reset-btn {
+      cursor: pointer;
+      color: white;
+      background: linear-gradient(135deg, #fb7185, #f97316);
+    }
+
+    .plan-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+    }
+
+    .task-card {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      gap: 7px;
+      border-radius: 17px;
+      padding: 8px 8px 8px 12px;
+      background: var(--card);
+      border: 1px solid rgba(233,236,242,.95);
+      box-shadow: 0 7px 17px rgba(15,23,42,.075);
+      transition: box-shadow .16s ease, background .16s ease, transform .18s cubic-bezier(.2,.8,.2,1), opacity .18s ease;
+      cursor: grab;
+      user-select: none;
+      will-change: transform;
+    }
+
+    .task-card:active { cursor: grabbing; }
+
+    .task-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 5px;
+      background: #d9deea;
+    }
+
+    .task-card.priority-high::before { background: var(--high); }
+.task-card.priority-medium::before { background: var(--medium); }
+    .task-card.priority-low::before { background: var(--low); }
+.task-card.done {
+      background: linear-gradient(135deg, #bbf7d0, #86efac);
+      border-color: #22c55e;
+      box-shadow: 0 8px 18px rgba(34,197,94,.22);
+    }
+
+    .task-card.dragging {
+      z-index: 50;
+      box-shadow: 0 18px 38px rgba(15,23,42,.24);
+      opacity: .98;
+      transition: box-shadow .16s ease, background .16s ease, opacity .18s ease;
+    }
+
+    .task-card.drag-moving {
+      transition: transform .16s cubic-bezier(.2,.8,.2,1);
+    }
+
+    .task-card.no-transition {
+      transition: none !important;
+    }
+
+    .card-top {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 7px;
+      align-items: center;
+      min-height: 27px;
+      touch-action: none;
+    }
+
+    .task-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 52px;
+      height: 24px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 900;
+      color: #4338ca;
+      background: #eef2ff;
+    }
+
+    .drag-note {
+      font-size: 11px;
+      font-weight: 800;
+      color: #9ca3af;
+      text-align: center;
+    }
+
+    .delete-btn {
+      display: none;
+      width: 27px;
+      height: 25px;
+      border: 0;
+      border-radius: 9px;
+      color: #be123c;
+      background: #ffe4e6;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      position: relative;
+      z-index: 2;
+    }
+
+    .task-card.can-delete .delete-btn { display: block; }
+
+    .task-text-wrap { position: relative; }
+
+    .task-text-wrap::before {
+      content: "✦";
+      position: absolute;
+      left: 10px;
+      top: 9px;
+      color: #7c3aed;
+      font-size: 12px;
+      font-weight: 900;
+      opacity: .78;
+      pointer-events: none;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 48px;
+      max-height: 105px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      padding: 8px 9px 8px 29px;
+      outline: none;
+      font-size: 14.5px;
+      font-weight: 750;
+      line-height: 1.35;
+      letter-spacing: -.15px;
+      color: #0f172a;
+      background: linear-gradient(135deg, #ffffff, #fbfcff);
+      user-select: text;
+      cursor: text;
+    }
+
+    .task-card.done textarea {
+      background: rgba(255,255,255,.78);
+      border-color: rgba(34,197,94,.45);
+    }
+
+    textarea::placeholder {
+      color: #9ca3af;
+      font-weight: 650;
+    }
+
+    textarea:focus,
+    .time-select:focus,
+    .priority-select:focus,
+    .mini-time:focus-within {
+      border-color: #a5b4fc;
+      box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+    }
+
+    .task-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr 58px;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .time-wrap {
+      position: relative;
+      min-width: 0;
+    }
+
+    .time-select,
+    .priority-select,
+    .done-btn {
+      height: 34px;
+      border-radius: 12px;
+      font-size: 12.5px;
+    }
+
+    .time-select,
+    .priority-select {
+      width: 100%;
+      border: 1px solid var(--line);
+      outline: none;
+      background: #fbfcff;
+      color: var(--ink);
+      font-weight: 800;
+      padding: 0 7px;
+    }
+
+    .exact-inline {
+      display: none;
+      grid-template-columns: 1fr 1fr 22px;
+      gap: 4px;
+      height: 34px;
+    }
+
+    .time-wrap.exact-mode .time-select {
+      display: none;
+    }
+
+    .time-wrap.exact-mode .exact-inline {
+      display: grid;
+    }
+
+    .mini-time {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 3px;
+      min-width: 0;
+      height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fbfcff;
+      padding: 0 5px;
+    }
+
+    .mini-time input {
+      width: 100%;
+      min-width: 0;
+      border: 0;
+      outline: none;
+      background: transparent;
+      text-align: center;
+      font-size: 12.5px;
+      font-weight: 900;
+      color: var(--ink);
+      padding: 0;
+      user-select: text;
+    }
+
+    .mini-time span {
+      font-size: 9.5px;
+      font-weight: 900;
+      color: #7c8293;
+      white-space: nowrap;
+    }
+
+    .time-back {
+      height: 34px;
+      width: 22px;
+      border: 0;
+      border-radius: 12px;
+      background: #eef2ff;
+      color: #4f46e5;
+      font-weight: 900;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .priority-select {
+      padding: 0 7px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .done-btn {
+      border: 0;
+      cursor: pointer;
+      padding: 0;
+      color: white;
+      font-weight: 900;
+      background: linear-gradient(135deg, #10b981, #22c55e);
+    }
+
+    .task-card.done .done-btn {
+      background: linear-gradient(135deg, #15803d, #16a34a);
+    }
+
+    .add-btn {
+      width: 100%;
+      height: 39px;
+      margin-top: 9px;
+      border: 0;
+      border-radius: 15px;
+      cursor: pointer;
+      color: white;
+      font-size: 13.5px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #2563eb, #9333ea);
+      box-shadow: 0 9px 18px rgba(79,70,229,.20);
+    }
+
+    .hint {
+      margin-top: 8px;
+      color: #6b7280;
+      font-size: 10.8px;
+      line-height: 1.35;
+      text-align: center;
+    }
+
+    @media (max-width: 370px) {
+      body { padding: 7px; }
+      .app { padding: 8px; border-radius: 21px; }
+      .hero { padding: 11px; }
+      h1 { font-size: 22px; }
+      .brand { display: none; }
+      .toolbar {
+        grid-template-columns: minmax(0, 1fr) 76px 52px;
+        gap: 5px;
+      }
+      .date-card {
+        grid-template-columns: 1fr;
+        gap: 2px;
+        padding: 6px 7px;
+      }
+      .weekday { font-size: 11px; }
+      .sort-box, .reset-btn { height: 35px; font-size: 10.8px; }
+      .task-options {
+        grid-template-columns: 1fr 1fr 54px;
+        gap: 5px;
+      }
+      .time-select,
+      .priority-select,
+      .done-btn,
+      .mini-time,
+      .time-back {
+        height: 33px;
+        font-size: 12px;
+      }
+      textarea { font-size: 14px; }
+    }
+
+    @media (max-width: 320px) {
+      .task-options { grid-template-columns: 1fr; }
+      .done-btn { width: 100%; }
+    }
+  
+    .task-options {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr 0.95fr 58px;
+      gap: 6px;
+      align-items: center;
+    }
+    .time-select,.priority-select,.done-btn{height:34px;border-radius:12px;font-size:12px;}
+    .time-select,.priority-select{width:100%;min-width:0;border:1px solid var(--line);outline:none;background:#fbfcff;color:var(--ink);font-weight:850;padding:0 7px;}
+    .time-box{display:grid;grid-template-columns:1fr 1fr;height:34px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#f3f4f8;opacity:.72;}
+    .time-box.active{background:#fbfcff;border-color:#c7d2fe;opacity:1;}
+    .time-part{display:grid;grid-template-columns:1fr auto;align-items:center;gap:3px;min-width:0;padding:0 5px;}
+    .time-part:first-child{border-right:1px solid var(--line);}
+    .time-part input{width:100%;min-width:0;border:0;outline:none;background:transparent;text-align:left;font-size:12.8px;font-weight:900;color:var(--ink);padding:0;user-select:text;}
+    .time-part input:disabled{color:#a3a9b8;-webkit-text-fill-color:#a3a9b8;opacity:1;}
+    .time-part span{font-size:9.5px;font-weight:900;color:#7c8293;white-space:nowrap;}
+</style>
+</head>
+<body>
+  <main class="app">
+    <section class="hero">
+      <div class="hero-top">
+        <h1>Daily Plan</h1>
+        <div class="brand"><a class="brand-link" href="https://www.etsy.com/shop/Lumoratic" target="_blank" rel="noopener noreferrer">Lumoratic</a></div>
+      </div>
+
+      <div class="toolbar">
+        <label class="date-card">
+          <input type="date" id="planDate" />
+          <span class="weekday" id="weekdayText">Friday</span>
+        </label>
+
+        <select class="sort-box" id="sortType">
+          <option value="">Sort</option>
+          <option value="timeAsc">Time ↑</option>
+          <option value="timeDesc">Time ↓</option>
+          <option value="priorityAsc">Prio ↑</option>
+          <option value="priorityDesc">Prio ↓</option>
+        </select>
+
+        <button class="reset-btn" onclick="resetTasks()">Reset</button>
+      </div>
+    </section>
+
+    <section class="plan-list" id="planList"></section>
+
+    <button class="add-btn" onclick="addTask()">+ Add task</button>
+
+    <p class="hint">Each date is saved separately. Reset clears only the selected date.</p>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "dailyPlanLumoroticByDateV22";
+
+    const planList = document.getElementById("planList");
+    const planDate = document.getElementById("planDate");
+    const weekdayText = document.getElementById("weekdayText");
+    const sortType = document.getElementById("sortType");
+
+    const priorityValue = { high: 1, medium: 2, low: 3, "": 999 };
+    const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+    let pressTimer = null;
+    let drag = null;
+    let saveTimer = null;
+    let scrollRAF = null;
+    let currentDateKey = "";
+
+    init();
+
+    function init() {
+      planDate.value = todayISO();
+      currentDateKey = planDate.value;
+
+      const allData = loadAllData();
+      const dayData = getDayData(currentDateKey, allData);
+      sortType.value = dayData.sortType || "";
+      renderTasks(dayData.tasks);
+      updateWeekday();
+
+      planDate.addEventListener("change", () => {
+        saveDataNow();
+        currentDateKey = planDate.value;
+        updateWeekday();
+
+        const allData = loadAllData();
+        const dayData = getDayData(currentDateKey, allData);
+        sortType.value = dayData.sortType || "";
+        renderTasks(dayData.tasks);
+      });
+
+      sortType.addEventListener("change", () => {
+        sortTasks();
+        saveData();
+      });
+    }
+
+    function todayISO() {
+      const d = new Date();
+      const offset = d.getTimezoneOffset();
+      const local = new Date(d.getTime() - offset * 60000);
+      return local.toISOString().split("T")[0];
+    }
+
+    function defaultTasks(count = 5) {
+      return Array.from({ length: count }, () => ({
+        text: "",
+        timeType: "",
+        exactHour: "",
+        exactMinute: "",
+        time: "",
+        priority: "",
+        done: false
+      }));
+    }
+
+    function emptyDayData() {
+      return {
+        sortType: "",
+        tasks: defaultTasks(5)
+      };
+    }
+
+    function getDayData(dateKey, allData) {
+      return allData[dateKey] || emptyDayData();
+    }
+
+    function updateWeekday() {
+      const selectedDate = new Date(planDate.value + "T00:00:00");
+      weekdayText.textContent = weekdays[selectedDate.getDay()];
+    }
+
+    function loadAllData() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+      } catch {
+        return {};
+      }
+    }
+
+    function saveAllData(data) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function collectCurrentDayData() {
+      const tasks = Array.from(document.querySelectorAll(".task-card")).map(card => ({
+        text: card.querySelector("textarea").value,
+        timeType: card.querySelector(".time-select").value,
+          exactHour: card.querySelector(".exact-hour").value,
+          exactMinute: card.querySelector(".exact-minute").value,
+          time: "",
+        priority: card.querySelector(".priority-select").value,
+        done: card.classList.contains("done")
+      }));
+
+      return {
+        sortType: sortType.value,
+        tasks
+      };
+    }
+
+    function saveData() {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveDataNow, 80);
+    }
+
+    function saveDataNow() {
+      if (!currentDateKey) return;
+      const allData = loadAllData();
+      allData[currentDateKey] = collectCurrentDayData();
+      saveAllData(allData);
+    }
+
+    function renderTasks(tasks) {
+      planList.innerHTML = "";
+      tasks.forEach((task, index) => {
+        planList.appendChild(createTaskCard(index, task));
+      });
+      refreshCards();
+    }
+
+    function createTaskCard(index, task = {}) {
+      const card = document.createElement("div");
+      const priority = task.priority || "";
+      card.className = priority ? "task-card priority-" + priority : "task-card";
+      if (task.done) card.classList.add("done");
+
+      card.innerHTML = `
+        <div class="card-top">
+          <span class="task-number">Plan ${index + 1}</span>
+          <span class="drag-note">hold & move</span>
+          <button class="delete-btn" title="Delete task">×</button>
+        </div>
+
+        <div class="task-text-wrap">
+          <textarea placeholder="Write your main task..."></textarea>
+        </div>
+
+        <div class="task-options">
+          <select class="time-select">
+            <option value="">Duration</option>
+            <option value="short">Short</option>
+            <option value="medium">Medium</option>
+            <option value="long">Long</option>
+            <option value="exact">Exact duration</option>
+          </select>
+
+          <div class="time-box">
+            <div class="time-part">
+              <input type="text" class="exact-hour" inputmode="numeric" maxlength="2" placeholder="00" disabled />
+              <span>hrs</span>
+            </div>
+            <div class="time-part">
+              <input type="text" class="exact-minute" inputmode="numeric" maxlength="2" placeholder="00" disabled />
+              <span>min</span>
+            </div>
+          </div>
+
+          <select class="priority-select">
+            <option value="">Priority</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+
+          <button class="done-btn">Done</button>
+        </div>
+      `;
+
+      const textArea = card.querySelector("textarea");
+      const prioritySelect = card.querySelector(".priority-select");
+      const doneButton = card.querySelector(".done-btn");
+      const deleteButton = card.querySelector(".delete-btn");
+      const timeSelect = card.querySelector(".time-select");
+      const exactHour = card.querySelector(".exact-hour");
+      const exactMinute = card.querySelector(".exact-minute");
+      const timeBox = card.querySelector(".time-box");
+
+      textArea.value = task.text || "";
+      timeSelect.value = task.timeType || (task.time ? "exact" : "");
+      setExactValues(task, exactHour, exactMinute);
+      prioritySelect.value = priority;
+      toggleExactTime(card);
+
+      textArea.addEventListener("input", saveData);
+
+      prioritySelect.addEventListener("change", () => {
+        card.classList.remove("priority-high", "priority-medium", "priority-low");
+        if (prioritySelect.value) card.classList.add("priority-" + prioritySelect.value);
+        autoSortIfSelected();
+        saveData();
+      });
+
+      timeSelect.addEventListener("change", () => {
+        toggleExactTime(card);
+        autoSortIfSelected();
+        saveData();
+      });
+
+      exactHour.addEventListener("input", () => {
+        cleanDigits(exactHour);
+        autoSortIfSelected();
+        saveData();
+      });
+
+      exactMinute.addEventListener("input", () => {
+        cleanDigits(exactMinute);
+        autoSortIfSelected();
+        saveData();
+      });
+
+      exactHour.addEventListener("blur", () => {
+        formatTwoDigitOnBlur(exactHour, 0, 23);
+        saveData();
+      });
+
+      exactMinute.addEventListener("blur", () => {
+        formatTwoDigitOnBlur(exactMinute, 0, 59);
+        saveData();
+      });
+
+      doneButton.addEventListener("click", () => {
+        card.classList.toggle("done");
+        saveData();
+      });
+
+      deleteButton.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (document.querySelectorAll(".task-card").length > 3) {
+          animateReorder(() => card.remove());
+          setTimeout(() => {
+            refreshCards();
+            saveData();
+          }, 220);
+        }
+      });
+
+      makeCardDraggable(card);
+      return card;
+    }
+
+    function toggleExactTime(card) {
+      const timeSelect = card.querySelector(".time-select");
+      const hour = card.querySelector(".exact-hour");
+      const minute = card.querySelector(".exact-minute");
+      const timeBox = card.querySelector(".time-box");
+
+      const enabled = timeSelect.value === "exact";
+      hour.disabled = !enabled;
+      minute.disabled = !enabled;
+      timeBox.classList.toggle("active", enabled);
+
+      if (!enabled) {
+        hour.value = "";
+        minute.value = "";
+      }
+    }
+
+    function setExactValues(task, hourInput, minuteInput) {
+      hourInput.value = task.exactHour || "";
+      minuteInput.value = task.exactMinute || "";
+
+      const oldValue = task.time || "";
+      if ((!hourInput.value && !minuteInput.value) && oldValue.includes(":")) {
+        const parts = oldValue.split(":");
+        hourInput.value = parts[0] || "";
+        minuteInput.value = parts[1] || "";
+      }
+    }
+
+    function cleanDigits(input) {
+      input.value = input.value.replace(/\D/g, "").slice(0, 2);
+    }
+
+    function formatTwoDigitOnBlur(input, min, max) {
+      let raw = input.value.replace(/\D/g, "").slice(0, 2);
+
+      if (raw === "") {
+        input.value = "";
+        return;
+      }
+
+      let value = Number(raw);
+      if (!Number.isFinite(value)) value = min;
+      if (value < min) value = min;
+      if (value > max) value = max;
+
+      input.value = String(value).padStart(2, "0");
+    }
+
+    function getTimeSortValue(card) {
+      const type = card.querySelector(".time-select").value;
+      const hour = Number(card.querySelector(".exact-hour").value) || 0;
+      const minute = Number(card.querySelector(".exact-minute").value) || 0;
+
+      if (type === "short") return 30;
+      if (type === "medium") return 90;
+      if (type === "long") return 180;
+      if (type === "exact") {
+        const total = hour * 60 + minute;
+        return total > 0 ? total : 999999;
+      }
+
+      return 999999;
+    }
+
+    function parseTimeValue(text) {
+      const clean = text.trim();
+      if (!clean) return 999999;
+
+      if (clean.includes(":")) {
+        const parts = clean.split(":");
+        const h = Number(parts[0]) || 0;
+        const m = Number(parts[1]) || 0;
+        return h * 60 + m;
+      }
+
+      const n = Number(clean.replace(/\D/g, ""));
+      return Number.isFinite(n) && n > 0 ? n : 999999;
+    }
+
+    function addTask() {
+      const count = document.querySelectorAll(".task-card").length;
+      animateReorder(() => planList.appendChild(createTaskCard(count)));
+      sortType.value = "";
+      setTimeout(() => {
+        refreshCards();
+        saveData();
+      }, 220);
+    }
+
+    function refreshCards() {
+      const cards = Array.from(document.querySelectorAll(".task-card"));
+      cards.forEach((card, index) => {
+        card.querySelector(".task-number").textContent = "Plan " + (index + 1);
+        card.classList.toggle("can-delete", index >= 3);
+      });
+    }
+
+    function autoSortIfSelected() {
+      if (sortType.value) sortTasks(false);
+    }
+
+    function sortTasks(shouldSave = true) {
+      const type = sortType.value;
+      if (!type) return;
+
+      const cards = Array.from(document.querySelectorAll(".task-card"));
+
+      cards.sort((a, b) => {
+        const timeA = getTimeSortValue(a);
+        const timeB = getTimeSortValue(b);
+        const prioA = priorityValue[a.querySelector(".priority-select").value];
+        const prioB = priorityValue[b.querySelector(".priority-select").value];
+
+        if (type === "timeAsc") return timeA - timeB;
+        if (type === "timeDesc") return timeB - timeA;
+        if (type === "priorityAsc") return prioA - prioB;
+        if (type === "priorityDesc") return prioB - prioA;
+      });
+
+      animateReorder(() => cards.forEach(card => planList.appendChild(card)));
+
+      setTimeout(() => {
+        refreshCards();
+        if (shouldSave) saveData();
+      }, 220);
+    }
+
+    function resetTasks() {
+      if (confirm("Clear plans for this date only?")) {
+        const allData = loadAllData();
+        delete allData[currentDateKey];
+        saveAllData(allData);
+
+        sortType.value = "";
+        renderTasks(defaultTasks(5));
+        saveData();
+      }
+    }
+
+    function isInteractive(el) {
+      return el.closest("button, select, input, textarea");
+    }
+
+    function makeCardDraggable(card) {
+      card.addEventListener("pointerdown", (e) => {
+        if (e.button !== undefined && e.button !== 0) return;
+        if (isInteractive(e.target)) return;
+
+        const startX = e.clientX;
+        const startY = e.clientY;
+
+        pressTimer = setTimeout(() => {
+          startDrag(card, e.clientY);
+          try { card.setPointerCapture(e.pointerId); } catch {}
+        }, 130);
+
+        function onMove(moveEvent) {
+          if (!drag) {
+            const moved = Math.abs(moveEvent.clientX - startX) + Math.abs(moveEvent.clientY - startY);
+            if (moved > 20) clearTimeout(pressTimer);
+            return;
+          }
+
+          moveEvent.preventDefault();
+          updateDrag(moveEvent.clientY);
+        }
+
+        function onUp() {
+          clearTimeout(pressTimer);
+          card.removeEventListener("pointermove", onMove);
+          card.removeEventListener("pointerup", onUp);
+          card.removeEventListener("pointercancel", onUp);
+          finishDrag();
+        }
+
+        card.addEventListener("pointermove", onMove);
+        card.addEventListener("pointerup", onUp);
+        card.addEventListener("pointercancel", onUp);
+      });
+    }
+
+    function startDrag(card, pointerY) {
+      if (drag) return;
+
+      sortType.value = "";
+
+      const cards = [...planList.querySelectorAll(".task-card")];
+      const rects = cards.map(card => card.getBoundingClientRect());
+      const activeIndex = cards.indexOf(card);
+      const activeRect = rects[activeIndex];
+
+      drag = {
+        card,
+        cards,
+        rects,
+        activeIndex,
+        currentIndex: activeIndex,
+        startY: pointerY,
+        pointerY,
+        itemHeight: activeRect.height + 8
+      };
+
+      card.classList.add("dragging");
+      navigator.vibrate?.(12);
+      startAutoScroll();
+    }
+
+    function updateDrag(pointerY) {
+      if (!drag) return;
+
+      drag.pointerY = pointerY;
+
+      const deltaY = pointerY - drag.startY;
+      const activeMiddle = drag.rects[drag.activeIndex].top + drag.rects[drag.activeIndex].height / 2 + deltaY;
+
+      let newIndex = drag.activeIndex;
+
+      drag.rects.forEach((rect, index) => {
+        if (index === drag.activeIndex) return;
+
+        const middle = rect.top + rect.height / 2;
+        if (activeMiddle > middle && index > drag.activeIndex) newIndex = index;
+        if (activeMiddle < middle && index < drag.activeIndex) newIndex = index;
+      });
+
+      drag.currentIndex = newIndex;
+
+      drag.cards.forEach((card, index) => {
+        card.classList.add("drag-moving");
+
+        if (index === drag.activeIndex) {
+          card.style.transform = `translateY(${deltaY}px) scale(1.018)`;
+          return;
+        }
+
+        let move = 0;
+
+        if (drag.currentIndex > drag.activeIndex) {
+          if (index > drag.activeIndex && index <= drag.currentIndex) {
+            move = -drag.itemHeight;
+          }
+        } else if (drag.currentIndex < drag.activeIndex) {
+          if (index >= drag.currentIndex && index < drag.activeIndex) {
+            move = drag.itemHeight;
+          }
+        }
+
+        card.style.transform = move ? `translateY(${move}px)` : "";
+      });
+    }
+
+    function finishDrag() {
+      if (!drag) return;
+
+      const { card, cards, activeIndex, currentIndex } = drag;
+
+      cards.forEach(card => {
+        card.classList.remove("drag-moving");
+        card.style.transform = "";
+      });
+
+      card.classList.remove("dragging");
+
+      if (currentIndex !== activeIndex) {
+        const ordered = [...cards];
+        ordered.splice(activeIndex, 1);
+        ordered.splice(currentIndex, 0, card);
+        ordered.forEach(item => planList.appendChild(item));
+      }
+
+      drag = null;
+      stopAutoScroll();
+      refreshCards();
+      saveData();
+    }
+
+    function animateReorder(changeDom) {
+      const cards = [...planList.querySelectorAll(".task-card")];
+      const first = new Map(cards.map(card => [card, card.getBoundingClientRect()]));
+
+      changeDom();
+
+      const afterCards = [...planList.querySelectorAll(".task-card")];
+
+      afterCards.forEach(card => {
+        const firstBox = first.get(card);
+        if (!firstBox) return;
+
+        const lastBox = card.getBoundingClientRect();
+        const dy = firstBox.top - lastBox.top;
+
+        if (dy) {
+          card.classList.add("no-transition");
+          card.style.transform = `translateY(${dy}px)`;
+          card.offsetHeight;
+          card.classList.remove("no-transition");
+          card.style.transform = "";
+        }
+      });
+    }
+
+    function startAutoScroll() {
+      stopAutoScroll();
+
+      function loop() {
+        if (!drag) return;
+
+        const edge = 90;
+        const maxSpeed = 10;
+        let speed = 0;
+
+        if (drag.pointerY < edge) {
+          speed = -Math.round((edge - drag.pointerY) / edge * maxSpeed);
+        } else if (window.innerHeight - drag.pointerY < edge) {
+          speed = Math.round((edge - (window.innerHeight - drag.pointerY)) / edge * maxSpeed);
+        }
+
+        if (speed !== 0) {
+          window.scrollBy(0, speed);
+          updateDrag(drag.pointerY);
+        }
+
+        scrollRAF = requestAnimationFrame(loop);
+      }
+
+      scrollRAF = requestAnimationFrame(loop);
+    }
+
+    function stopAutoScroll() {
+      if (scrollRAF) cancelAnimationFrame(scrollRAF);
+      scrollRAF = null;
+    }
+  </script>
+</body>
+</html>
