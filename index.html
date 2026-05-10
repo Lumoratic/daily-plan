@@ -1,0 +1,4787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Guided Focus Planner</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#111111" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Planner" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,700;9..144,800&display=swap" rel="stylesheet">
+
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, #f2dfc8 0, transparent 32%),
+        linear-gradient(180deg, #f8f4ee 0%, #efe8de 100%);
+      color: #28231f;
+      padding: 18px;
+    }
+
+    .app {
+      max-width: 440px;
+      margin: 0 auto;
+      padding-bottom: 28px;
+    }
+
+    header {
+      padding: 12px 4px 18px;
+    }
+
+    .date {
+      font-size: 13px;
+      color: #82776c;
+      margin-bottom: 7px;
+      font-weight: 600;
+    }
+
+    h1 {
+      font-size: 31px;
+      line-height: 1.08;
+      margin-bottom: 9px;
+      letter-spacing: -0.8px;
+    }
+
+    .sub {
+      font-size: 15px;
+      line-height: 1.45;
+      color: #71675c;
+    }
+
+    .test-badge {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 7px 11px;
+      background: #2b2824;
+      color: white;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border-radius: 26px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 14px 34px rgba(60, 43, 26, 0.09);
+      border: 1px solid rgba(120, 95, 66, 0.08);
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: 850;
+      margin-bottom: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #91867a;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .label {
+      font-size: 13px;
+      font-weight: 800;
+      color: #5d5146;
+      margin: 14px 0 7px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid #ddd3c7;
+      border-radius: 17px;
+      padding: 14px 14px;
+      font-size: 15px;
+      background: #fffdf9;
+      color: #2b2824;
+      outline: none;
+      transition: 0.18s ease;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: #b99563;
+      box-shadow: 0 0 0 4px rgba(185, 149, 99, 0.14);
+      background: #ffffff;
+    }
+
+    .task-row {
+      display: grid;
+      grid-template-columns: 30px 1fr 42px;
+      gap: 9px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .check {
+      width: 30px;
+      height: 30px;
+      border: 2px solid #c2a879;
+      border-radius: 11px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      font-weight: 900;
+      color: #fff;
+      background: #fffaf2;
+    }
+
+    .task-row.done .check {
+      background: #78906a;
+      border-color: #78906a;
+    }
+
+    .task-row.done input {
+      text-decoration: line-through;
+      color: #958d83;
+      background: #f3eee8;
+    }
+
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 15px;
+      border: 0;
+      background: #f3e7df;
+      color: #9a4c3f;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    .icon-btn:hover {
+      background: #ead7ce;
+      transform: translateY(-1px);
+    }
+
+    .trash {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 2.1;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 17px;
+      padding: 14px 16px;
+      margin-top: 10px;
+      background: #29241f;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 850;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 18px rgba(43, 36, 31, 0.12);
+    }
+
+    button.secondary {
+      background: #eee5da;
+      color: #2b2824;
+      box-shadow: none;
+    }
+
+    button.danger {
+      background: #f0ded8;
+      color: #8b3f34;
+      box-shadow: none;
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .helper {
+      margin-top: 8px;
+      font-size: 12.5px;
+      line-height: 1.4;
+      color: #81766a;
+      background: #f7f0e7;
+      border-radius: 14px;
+      padding: 10px 12px;
+    }
+
+    .timer {
+      text-align: center;
+    }
+
+    .phase {
+      font-size: 14px;
+      font-weight: 850;
+      color: #7b654b;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 8px;
+    }
+
+    .time {
+      font-size: 60px;
+      font-weight: 950;
+      letter-spacing: -2.2px;
+      margin: 8px 0;
+    }
+
+    .message {
+      background: #f5ecde;
+      color: #5c5045;
+      border-radius: 18px;
+      padding: 14px;
+      font-size: 15px;
+      line-height: 1.45;
+      margin-top: 12px;
+      white-space: pre-line;
+      text-align: left;
+    }
+
+    .steps {
+      display: grid;
+      gap: 9px;
+      margin-top: 13px;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #fffdf9;
+      border: 1px solid #eee5da;
+      border-radius: 17px;
+      padding: 12px;
+      text-align: left;
+    }
+
+    .dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 11px;
+      border: 2px solid #c6ad83;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      color: #fff;
+      flex-shrink: 0;
+      background: #fffaf2;
+    }
+
+    .step.done .dot {
+      background: #78906a;
+      border-color: #78906a;
+    }
+
+    .step.active {
+      border-color: #b99563;
+      background: #fff8ed;
+      box-shadow: 0 8px 18px rgba(185, 149, 99, 0.12);
+    }
+
+    .step-title {
+      font-weight: 850;
+      font-size: 14px;
+    }
+
+    .step-sub {
+      font-size: 12px;
+      color: #7c7166;
+      margin-top: 2px;
+    }
+
+
+    .mobile-status {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border-radius: 24px;
+      padding: 12px;
+      margin-bottom: 16px;
+      box-shadow: 0 14px 34px rgba(60, 43, 26, 0.09);
+      border: 1px solid rgba(120, 95, 66, 0.08);
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .user-mini {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+    }
+
+    .user-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 13px;
+      background: #29241f;
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 900;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .user-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .user-name {
+      font-size: 13px;
+      font-weight: 900;
+      color: #2b2824;
+      max-width: 130px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-sub {
+      font-size: 11px;
+      color: #82776c;
+      max-width: 130px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 1px;
+    }
+
+    .status-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .tiny-btn {
+      width: auto;
+      margin: 0;
+      padding: 8px 9px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      line-height: 1;
+      background: #eee5da;
+      color: #2b2824;
+      box-shadow: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      justify-content: center;
+    }
+
+    .google-tiny {
+      background: #fffdf9;
+      border: 1px solid #ddd3c7;
+    }
+
+    .dot-status {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #c6b8a7;
+      display: inline-block;
+    }
+
+    .dot-status.on {
+      background: #78906a;
+    }
+
+    .mini-message {
+      display: none;
+      margin-top: 9px;
+      font-size: 12px;
+      line-height: 1.4;
+      color: #735f4a;
+      background: #f7f0e7;
+      border-radius: 13px;
+      padding: 9px 10px;
+    }
+
+    .mini-message.show {
+      display: block;
+    }
+
+    .mini-message.error {
+      display: block;
+      color: #8b3f34;
+      background: #f4e2dc;
+    }
+
+    .hidden-status {
+      display: none;
+    }
+
+
+    .focus-stats,
+    .history-card {
+      padding: 16px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .stat-item {
+      background: #fffdf9;
+      border: 1px solid #eee5da;
+      border-radius: 17px;
+      padding: 12px 8px;
+      text-align: center;
+    }
+
+    .stat-item strong {
+      display: block;
+      font-size: 24px;
+      line-height: 1;
+      letter-spacing: -1px;
+      color: #2b2824;
+    }
+
+    .stat-item span {
+      display: block;
+      margin-top: 5px;
+      font-size: 11px;
+      color: #82776c;
+      font-weight: 800;
+    }
+
+    .history-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: #fffdf9;
+      border: 1px solid #eee5da;
+      border-radius: 17px;
+      padding: 12px;
+    }
+
+    .history-main {
+      min-width: 0;
+    }
+
+    .history-title {
+      font-size: 13px;
+      font-weight: 900;
+      color: #2b2824;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 230px;
+    }
+
+    .history-meta {
+      font-size: 11.5px;
+      color: #82776c;
+      margin-top: 3px;
+    }
+
+    .history-badge {
+      font-size: 12px;
+      font-weight: 900;
+      color: #5d5146;
+      background: #f5ecde;
+      border-radius: 999px;
+      padding: 7px 9px;
+      white-space: nowrap;
+    }
+
+    .history-empty {
+      background: #f7f0e7;
+      border-radius: 14px;
+      padding: 12px;
+      font-size: 12.5px;
+      color: #81766a;
+      line-height: 1.4;
+    }
+
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      background: rgba(42, 35, 29, 0.34);
+      backdrop-filter: blur(8px);
+      padding: 14px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .progress-modal {
+      width: 100%;
+      max-width: 440px;
+      max-height: 86vh;
+      overflow: auto;
+      background:
+        radial-gradient(circle at top right, rgba(242, 223, 200, 0.95), transparent 32%),
+        rgba(255, 255, 255, 0.96);
+      border: 1px solid rgba(120, 95, 66, 0.12);
+      border-radius: 30px;
+      padding: 18px;
+      box-shadow: 0 26px 80px rgba(42, 35, 29, 0.22);
+      animation: modalUp .24s cubic-bezier(.2,.8,.2,1);
+    }
+
+    @keyframes modalUp {
+      from {
+        opacity: 0;
+        transform: translateY(22px) scale(.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .eyebrow-small {
+      font-size: 11px;
+      font-weight: 900;
+      color: #9a8062;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 4px;
+    }
+
+    .modal-head h2 {
+      font-size: 28px;
+      line-height: 1;
+      letter-spacing: -1px;
+      color: #28231f;
+    }
+
+    .modal-close {
+      width: 38px;
+      height: 38px;
+      margin: 0;
+      padding: 0;
+      border-radius: 14px;
+      background: #eee5da;
+      color: #2b2824;
+      font-size: 26px;
+      line-height: 1;
+      display: grid;
+      place-items: center;
+      box-shadow: none;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .stat-item {
+      background: #fffdf9;
+      border: 1px solid #eee5da;
+      border-radius: 17px;
+      padding: 12px 8px;
+      text-align: center;
+    }
+
+    .stat-item strong {
+      display: block;
+      font-size: 25px;
+      line-height: 1;
+      letter-spacing: -1px;
+      color: #2b2824;
+    }
+
+    .stat-item span {
+      display: block;
+      margin-top: 5px;
+      font-size: 11px;
+      color: #82776c;
+      font-weight: 800;
+    }
+
+    .modal-section-title {
+      margin: 16px 0 10px;
+      font-size: 14px;
+      font-weight: 900;
+      color: #2b2824;
+    }
+
+    .history-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: #fffdf9;
+      border: 1px solid #eee5da;
+      border-radius: 17px;
+      padding: 12px;
+    }
+
+    .history-main {
+      min-width: 0;
+    }
+
+    .history-title {
+      font-size: 13px;
+      font-weight: 900;
+      color: #2b2824;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 230px;
+    }
+
+    .history-meta {
+      font-size: 11.5px;
+      color: #82776c;
+      margin-top: 3px;
+    }
+
+    .history-badge {
+      font-size: 12px;
+      font-weight: 900;
+      color: #5d5146;
+      background: #f5ecde;
+      border-radius: 999px;
+      padding: 7px 9px;
+      white-space: nowrap;
+    }
+
+    .history-empty {
+      background: #f7f0e7;
+      border-radius: 14px;
+      padding: 12px;
+      font-size: 12.5px;
+      color: #81766a;
+      line-height: 1.4;
+    }
+
+
+    /* Account header fixed: no squeezed username */
+    .mobile-status {
+      padding: 16px !important;
+      border-radius: 30px !important;
+    }
+
+    .status-row {
+      display: grid !important;
+      grid-template-columns: 1fr !important;
+      gap: 13px !important;
+      align-items: stretch !important;
+    }
+
+    .user-mini {
+      width: 100% !important;
+      align-items: center !important;
+      gap: 12px !important;
+    }
+
+    .user-avatar {
+      width: 52px !important;
+      height: 52px !important;
+      border-radius: 18px !important;
+      font-size: 16px !important;
+    }
+
+    .user-name {
+      font-size: 17px !important;
+      line-height: 1.18 !important;
+      max-width: none !important;
+      white-space: normal !important;
+      overflow: visible !important;
+      text-overflow: unset !important;
+      word-break: break-word !important;
+    }
+
+    .user-sub {
+      font-size: 12.5px !important;
+      max-width: none !important;
+      white-space: normal !important;
+      overflow: visible !important;
+      text-overflow: unset !important;
+      margin-top: 3px !important;
+    }
+
+    .status-actions {
+      width: 100% !important;
+      display: grid !important;
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 8px !important;
+    }
+
+    .tiny-btn {
+      width: 100% !important;
+      padding: 10px 8px !important;
+      font-size: 12px !important;
+      font-weight: 850 !important;
+    }
+
+    .test-badge {
+      font-size: 11px !important;
+      padding: 7px 10px !important;
+    }
+
+
+    /* Safe bottom nav - does not touch timer/task logic */
+    .mobile-status {
+      display: none !important;
+    }
+
+    .app {
+      padding-bottom: 98px;
+    }
+
+    .safe-bottom-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 9999;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      padding: 10px 18px calc(10px + env(safe-area-inset-bottom));
+      background: rgba(40, 36, 32, 0.94);
+      backdrop-filter: blur(18px);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 -14px 34px rgba(0,0,0,0.22);
+    }
+
+    .safe-nav-btn {
+      margin: 0;
+      padding: 9px 6px;
+      border-radius: 18px;
+      background: transparent;
+      color: rgba(255,255,255,0.72);
+      box-shadow: none;
+      font-size: 11.5px;
+      font-weight: 850;
+      display: grid;
+      place-items: center;
+      gap: 4px;
+    }
+
+    .safe-nav-btn .nav-icon {
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .safe-nav-btn.active {
+      color: #ff9d00;
+      background: rgba(255,157,0,0.12);
+    }
+
+    .account-sheet-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 9998;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      background: rgba(42, 35, 29, 0.34);
+      backdrop-filter: blur(8px);
+      padding: 14px;
+    }
+
+    .account-sheet-backdrop.open {
+      display: flex;
+    }
+
+    .account-sheet {
+      width: 100%;
+      max-width: 440px;
+      max-height: 86vh;
+      overflow: auto;
+      background:
+        radial-gradient(circle at top right, rgba(242, 223, 200, 0.95), transparent 32%),
+        rgba(255, 255, 255, 0.97);
+      border: 1px solid rgba(120, 95, 66, 0.12);
+      border-radius: 30px;
+      padding: 18px;
+      box-shadow: 0 26px 80px rgba(42, 35, 29, 0.22);
+    }
+
+    .account-sheet-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .account-sheet-title h2 {
+      font-size: 30px;
+      line-height: 1;
+      letter-spacing: -1px;
+      color: #28231f;
+      margin-bottom: 6px;
+    }
+
+    .account-sheet-title p {
+      font-size: 13px;
+      color: #786d62;
+    }
+
+    .account-sheet-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 22px;
+      background: #ff9d00;
+      color: #241f1b;
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      font-weight: 950;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .account-sheet-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .account-row-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .account-row {
+      width: 100%;
+      margin: 0;
+      background: #fffdf9;
+      color: #2b2824;
+      box-shadow: none;
+      border: 1px solid #eee5da;
+      border-radius: 20px;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      text-align: left;
+    }
+
+    .account-row-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .account-row-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: #f5ecde;
+      flex-shrink: 0;
+      font-size: 18px;
+    }
+
+    .account-row-text {
+      min-width: 0;
+    }
+
+    .account-row-text strong {
+      display: block;
+      font-size: 14px;
+      color: #2b2824;
+    }
+
+    .account-row-text span {
+      display: block;
+      font-size: 12px;
+      color: #82776c;
+      margin-top: 3px;
+    }
+
+    .account-value {
+      color: #82776c;
+      font-size: 13px;
+      font-weight: 850;
+      flex-shrink: 0;
+    }
+
+    .account-value.on {
+      color: #719060;
+    }
+
+    .account-value.danger {
+      color: #9b4038;
+    }
+
+    body.safe-dark-mode {
+      background: linear-gradient(180deg, #171513 0%, #24211e 100%) !important;
+      color: #f6efe6;
+    }
+
+    body.safe-dark-mode .card,
+    body.safe-dark-mode .account-sheet,
+    body.safe-dark-mode .account-row {
+      background: rgba(45,42,38,0.96) !important;
+      border-color: rgba(255,255,255,0.08) !important;
+      color: #f6efe6 !important;
+    }
+
+    body.safe-dark-mode header h1,
+    body.safe-dark-mode .title,
+    body.safe-dark-mode .phase,
+    body.safe-dark-mode .time,
+    body.safe-dark-mode .account-sheet-title h2,
+    body.safe-dark-mode .account-row-text strong {
+      color: #fff8ee !important;
+    }
+
+    body.safe-dark-mode header p,
+    body.safe-dark-mode .helper,
+    body.safe-dark-mode .hint,
+    body.safe-dark-mode .message,
+    body.safe-dark-mode .account-sheet-title p,
+    body.safe-dark-mode .account-row-text span,
+    body.safe-dark-mode .account-value {
+      color: #c8bdb1 !important;
+    }
+
+    body.safe-dark-mode input,
+    body.safe-dark-mode select {
+      background: rgba(28,26,24,0.92) !important;
+      border-color: rgba(255,255,255,0.10) !important;
+      color: #fff8ee !important;
+    }
+
+    body.safe-dark-mode button.secondary,
+    body.safe-dark-mode .account-row-icon {
+      background: rgba(255,255,255,0.08) !important;
+      color: #fff8ee !important;
+    }
+
+    body.safe-dark-mode .message {
+      background: rgba(255,255,255,0.07) !important;
+    }
+
+
+    /* Real tab pages */
+    .safe-page {
+      display: none;
+    }
+
+    .safe-page.active {
+      display: block;
+    }
+
+    body.safe-page-progress .home-content,
+    body.safe-page-account .home-content {
+      display: none !important;
+    }
+
+    body.safe-page-home .home-content {
+      display: block;
+    }
+
+    .safe-page-title {
+      margin-bottom: 16px;
+    }
+
+    .safe-page-title h2 {
+      font-size: 36px;
+      line-height: 1.03;
+      letter-spacing: -1.4px;
+      color: #28231f;
+      margin-bottom: 8px;
+    }
+
+    .safe-page-title p {
+      color: #786d62;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .safe-progress-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .safe-progress-box {
+      background: #fffdf9;
+      border: 1px solid #eee5da;
+      border-radius: 22px;
+      padding: 16px;
+    }
+
+    .safe-progress-box strong {
+      display: block;
+      font-size: 30px;
+      line-height: 1;
+      letter-spacing: -1px;
+      color: #2b2824;
+    }
+
+    .safe-progress-box span {
+      display: block;
+      margin-top: 7px;
+      color: #82776c;
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .safe-history-list {
+      display: grid;
+      gap: 9px;
+    }
+
+    .safe-history-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 13px;
+      background: #fffdf9;
+      border: 1px solid #eee5da;
+      border-radius: 18px;
+    }
+
+    .safe-history-title {
+      font-weight: 900;
+      color: #2b2824;
+      font-size: 13.5px;
+    }
+
+    .safe-history-meta {
+      color: #82776c;
+      font-size: 11.5px;
+      margin-top: 3px;
+    }
+
+    .safe-history-badge {
+      background: #f5ecde;
+      color: #5d5146;
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .safe-history-empty {
+      background: #f7f0e7;
+      border-radius: 16px;
+      padding: 14px;
+      color: #81766a;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .safe-account-hero {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .safe-account-hero h2 {
+      font-size: 36px;
+      line-height: 1.05;
+      letter-spacing: -1.4px;
+      color: #28231f;
+    }
+
+    .safe-account-hero p {
+      margin-top: 6px;
+      color: #786d62;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .safe-account-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 26px;
+      background: #ff9d00;
+      color: #241f1b;
+      display: grid;
+      place-items: center;
+      font-size: 30px;
+      font-weight: 950;
+      overflow: hidden;
+      flex-shrink: 0;
+      box-shadow: 0 14px 30px rgba(255,157,0,0.24);
+    }
+
+    .safe-account-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .safe-settings-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .safe-settings-row {
+      width: 100%;
+      margin: 0;
+      background: #fffdf9;
+      color: #2b2824;
+      box-shadow: none;
+      border: 1px solid #eee5da;
+      border-radius: 20px;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      text-align: left;
+    }
+
+    .safe-settings-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .safe-settings-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: #f5ecde;
+      flex-shrink: 0;
+      font-size: 18px;
+    }
+
+    .safe-settings-text strong {
+      display: block;
+      font-size: 14px;
+      color: #2b2824;
+    }
+
+    .safe-settings-text span {
+      display: block;
+      font-size: 12px;
+      color: #82776c;
+      margin-top: 3px;
+    }
+
+    .safe-settings-value {
+      color: #82776c;
+      font-size: 13px;
+      font-weight: 850;
+      flex-shrink: 0;
+    }
+
+    .safe-settings-value.on {
+      color: #719060;
+    }
+
+    .safe-settings-value.danger {
+      color: #9b4038;
+    }
+
+    body.safe-dark-mode .safe-page-title h2,
+    body.safe-dark-mode .safe-account-hero h2,
+    body.safe-dark-mode .safe-settings-text strong,
+    body.safe-dark-mode .safe-progress-box strong,
+    body.safe-dark-mode .safe-history-title {
+      color: #fff8ee !important;
+    }
+
+    body.safe-dark-mode .safe-page-title p,
+    body.safe-dark-mode .safe-account-hero p,
+    body.safe-dark-mode .safe-settings-text span,
+    body.safe-dark-mode .safe-settings-value,
+    body.safe-dark-mode .safe-progress-box span,
+    body.safe-dark-mode .safe-history-meta {
+      color: #c8bdb1 !important;
+    }
+
+    body.safe-dark-mode .safe-settings-row,
+    body.safe-dark-mode .safe-progress-box,
+    body.safe-dark-mode .safe-history-item {
+      background: rgba(45,42,38,0.96) !important;
+      border-color: rgba(255,255,255,0.08) !important;
+    }
+
+    body.safe-dark-mode .safe-settings-icon,
+    body.safe-dark-mode .safe-history-badge,
+    body.safe-dark-mode .safe-history-empty {
+      background: rgba(255,255,255,0.08) !important;
+      color: #fff8ee !important;
+    }
+
+
+    /* Dark mode visibility fix */
+    body.safe-dark-mode .step,
+    body.safe-dark-mode .task-row input,
+    body.safe-dark-mode .safe-history-empty,
+    body.safe-dark-mode .history-empty,
+    body.safe-dark-mode .stat-item {
+      background: rgba(34, 31, 28, 0.96) !important;
+      border-color: rgba(255,255,255,0.12) !important;
+      color: #fff8ee !important;
+    }
+
+    body.safe-dark-mode .step.active {
+      background: rgba(255, 157, 0, 0.10) !important;
+      border-color: rgba(255, 157, 0, 0.38) !important;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.18) !important;
+    }
+
+    body.safe-dark-mode .step-title,
+    body.safe-dark-mode .label,
+    body.safe-dark-mode .date,
+    body.safe-dark-mode .stat-item strong {
+      color: #fff8ee !important;
+    }
+
+    body.safe-dark-mode .step-sub,
+    body.safe-dark-mode .sub,
+    body.safe-dark-mode .stat-item span {
+      color: #d5c9bc !important;
+    }
+
+    body.safe-dark-mode .dot,
+    body.safe-dark-mode .check {
+      background: rgba(255,255,255,0.08) !important;
+      border-color: rgba(255,255,255,0.28) !important;
+      color: #fff8ee !important;
+    }
+
+    body.safe-dark-mode .step.done .dot,
+    body.safe-dark-mode .task-row.done .check {
+      background: #78906a !important;
+      border-color: #78906a !important;
+      color: #ffffff !important;
+    }
+
+    body.safe-dark-mode .task-row.done input {
+      background: rgba(255,255,255,0.06) !important;
+      color: #bfb4aa !important;
+    }
+
+    body.safe-dark-mode button:disabled {
+      background: rgba(255,255,255,0.06) !important;
+      color: rgba(255,248,238,0.55) !important;
+    }
+
+    body.safe-dark-mode select option {
+      background: #1c1a18;
+      color: #fff8ee;
+    }
+
+
+
+    /* Welcome Screen */
+    .welcome-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, #f2dfc8 0, transparent 32%),
+        linear-gradient(180deg, #f8f4ee 0%, #efe8de 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 26px;
+      transition: opacity .25s ease;
+    }
+
+    .welcome-content {
+      width: 100%;
+      max-width: 420px;
+      text-align: left;
+    }
+
+    .welcome-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.7);
+      color: #7c6d5c;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      margin-bottom: 22px;
+      box-shadow: 0 10px 24px rgba(60, 43, 26, 0.08);
+    }
+
+    .welcome-content h1 {
+      font-size: 44px;
+      line-height: 0.98;
+      letter-spacing: -2px;
+      color: #28231f;
+      margin-bottom: 18px;
+    }
+
+    .welcome-content p {
+      font-size: 17px;
+      line-height: 1.6;
+      color: #786d62;
+      margin-bottom: 30px;
+      max-width: 320px;
+    }
+
+    .welcome-btn {
+      width: 100%;
+      border: 0;
+      border-radius: 22px;
+      padding: 18px;
+      background: #29241f;
+      color: white;
+      font-size: 16px;
+      font-weight: 900;
+      box-shadow: 0 16px 34px rgba(43,36,31,0.18);
+    }
+
+    .welcome-hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    body.safe-dark-mode .welcome-screen {
+      background: linear-gradient(180deg, #171513 0%, #24211e 100%) !important;
+    }
+
+    body.safe-dark-mode .welcome-badge {
+      background: rgba(255,255,255,0.08) !important;
+      color: #c8bdb1 !important;
+    }
+
+    body.safe-dark-mode .welcome-content h1 {
+      color: #fff8ee !important;
+    }
+
+    body.safe-dark-mode .welcome-content p {
+      color: #c8bdb1 !important;
+    }
+
+    @media (max-width: 380px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .time {
+        font-size: 52px;
+      }
+    }
+  
+
+    /* Typography + mobile polish patch */
+    :root {
+      --soft-font: "Nunito Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      font-family: var(--soft-font) !important;
+    }
+
+    body {
+      font-weight: 500;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    h1,
+    .safe-page-title h2,
+    .safe-account-hero h2,
+    .account-sheet-title h2 {
+      font-weight: 850 !important;
+      letter-spacing: -1.5px !important;
+    }
+
+    .title,
+    .safe-history-title,
+    .history-title,
+    .step-title,
+    button {
+      font-weight: 800 !important;
+    }
+
+    .sub,
+    .safe-page-title p,
+    .message,
+    .helper,
+    .safe-history-meta,
+    .history-meta {
+      font-weight: 500 !important;
+    }
+
+    .safe-page-title {
+      margin-bottom: 18px !important;
+      padding: 2px 2px 0 !important;
+    }
+
+    .safe-page-title h2 {
+      font-size: clamp(38px, 11vw, 48px) !important;
+      line-height: 0.98 !important;
+      margin-bottom: 10px !important;
+    }
+
+    .safe-page-title p {
+      font-size: 16px !important;
+      line-height: 1.45 !important;
+      color: #7e7368 !important;
+    }
+
+    .card {
+      border-radius: 28px !important;
+    }
+
+    .safeProgressPage .card,
+    #safeProgressPage .card {
+      overflow: hidden !important;
+    }
+
+    #safeProgressPage .title {
+      font-size: 21px !important;
+      line-height: 1.15 !important;
+      margin-bottom: 14px !important;
+    }
+
+    #safeProgressPage .hint {
+      font-size: 13px !important;
+      font-weight: 800 !important;
+      color: #95897d !important;
+    }
+
+    #safeMotivationText.message {
+      font-size: 16px !important;
+      line-height: 1.45 !important;
+      padding: 16px 18px !important;
+      margin: 0 0 14px !important;
+      border-radius: 22px !important;
+    }
+
+    .safe-progress-grid {
+      gap: 12px !important;
+    }
+
+    .safe-progress-box {
+      min-width: 0 !important;
+      overflow: hidden !important;
+      padding: 15px 14px !important;
+      border-radius: 22px !important;
+    }
+
+    .safe-progress-box strong {
+      font-size: clamp(26px, 8vw, 34px) !important;
+      line-height: 1.02 !important;
+      letter-spacing: -0.8px !important;
+      font-weight: 850 !important;
+      white-space: nowrap !important;
+    }
+
+    .safe-progress-box span {
+      font-size: 13px !important;
+      font-weight: 750 !important;
+      color: #786f66 !important;
+    }
+
+    #safeLastSessionText.helper {
+      font-size: 15px !important;
+      line-height: 1.4 !important;
+      padding: 14px 16px !important;
+      border-radius: 20px !important;
+      margin-top: 14px !important;
+    }
+
+    .safe-history-item {
+      padding: 14px !important;
+      border-radius: 20px !important;
+      min-width: 0 !important;
+    }
+
+    .safe-history-title {
+      font-size: 15px !important;
+      line-height: 1.2 !important;
+      font-weight: 850 !important;
+    }
+
+    .safe-history-meta {
+      font-size: 13px !important;
+      line-height: 1.35 !important;
+      color: #81766b !important;
+    }
+
+    .safe-history-badge {
+      font-size: 14px !important;
+      font-weight: 850 !important;
+      padding: 9px 12px !important;
+    }
+
+    @media (max-width: 420px) {
+      body {
+        padding: 16px !important;
+      }
+
+      .app {
+        max-width: 100% !important;
+      }
+
+      .safe-page-title h2 {
+        font-size: 40px !important;
+      }
+
+      .safe-page-title p {
+        font-size: 15.5px !important;
+      }
+
+      #safeProgressPage .card {
+        padding: 17px !important;
+        border-radius: 26px !important;
+      }
+
+      .safe-progress-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+      }
+
+      .safe-progress-box {
+        display: flex !important;
+        align-items: baseline !important;
+        justify-content: space-between !important;
+        gap: 12px !important;
+        padding: 15px 16px !important;
+      }
+
+      .safe-progress-box strong {
+        font-size: 32px !important;
+      }
+
+      .safe-progress-box span {
+        margin-top: 0 !important;
+        text-align: right !important;
+        white-space: nowrap !important;
+      }
+    }
+
+    @media (max-width: 350px) {
+      .safe-progress-box strong {
+        font-size: 29px !important;
+      }
+
+      #safeMotivationText.message {
+        font-size: 15px !important;
+      }
+    }
+
+/* ===== PROFESSIONAL SALE-READY VISUAL PATCH =====
+   Paste-safe: overrides only visual styles, not app logic.
+*/
+:root {
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: "Fraunces", "Inter", serif;
+
+  --bg-1: #fbf7f0;
+  --bg-2: #eee4d7;
+  --surface: rgba(255, 253, 249, 0.86);
+  --surface-solid: #fffdf9;
+  --text: #211d19;
+  --muted: #756b61;
+  --muted-2: #9a8d80;
+  --line: rgba(96, 76, 55, 0.12);
+  --accent: #d97a18;
+  --accent-soft: rgba(217, 122, 24, 0.12);
+  --success: #6f8b5f;
+  --danger: #9a4a3f;
+
+  --radius-card: 30px;
+  --radius-control: 18px;
+  --shadow-card: 0 18px 45px rgba(55, 39, 22, 0.10);
+  --shadow-soft: 0 10px 24px rgba(55, 39, 22, 0.08);
+}
+
+* {
+  font-family: var(--font-ui) !important;
+  letter-spacing: -0.01em;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255, 218, 171, 0.46) 0, transparent 31%),
+    radial-gradient(circle at 92% 18%, rgba(255, 177, 93, 0.14) 0, transparent 29%),
+    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%) !important;
+  color: var(--text) !important;
+  font-size: 15.5px;
+  font-weight: 500 !important;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.app {
+  max-width: 430px !important;
+}
+
+header {
+  padding: 18px 2px 20px !important;
+}
+
+.date,
+.eyebrow-small,
+.phase {
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.11em !important;
+  text-transform: uppercase;
+  color: var(--muted-2) !important;
+}
+
+h1,
+.welcome-content h1,
+.safe-page-title h2,
+.safe-account-hero h2,
+.account-sheet-title h2,
+.modal-head h2 {
+  font-family: var(--font-display) !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.055em !important;
+  color: var(--text) !important;
+}
+
+header h1 {
+  font-size: clamp(35px, 9.4vw, 43px) !important;
+  line-height: 0.98 !important;
+  margin-bottom: 12px !important;
+}
+
+.welcome-content h1 {
+  font-size: clamp(47px, 13vw, 58px) !important;
+  line-height: 0.92 !important;
+  margin-bottom: 18px !important;
+}
+
+.sub,
+.welcome-content p,
+.safe-page-title p,
+.safe-account-hero p {
+  font-size: 15.5px !important;
+  line-height: 1.55 !important;
+  color: var(--muted) !important;
+  font-weight: 500 !important;
+}
+
+.card,
+.mobile-status,
+.account-sheet,
+.progress-modal {
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius-card) !important;
+  box-shadow: var(--shadow-card) !important;
+  backdrop-filter: blur(18px) saturate(1.08) !important;
+  padding: 20px !important;
+}
+
+.title {
+  font-size: 19px !important;
+  line-height: 1.15 !important;
+  font-weight: 800 !important;
+  color: var(--text) !important;
+  margin-bottom: 15px !important;
+}
+
+.hint {
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  color: var(--muted-2) !important;
+  letter-spacing: 0.02em;
+}
+
+.label {
+  font-size: 12.5px !important;
+  font-weight: 800 !important;
+  color: #5e554d !important;
+  margin: 16px 0 8px !important;
+}
+
+input,
+select {
+  min-height: 50px;
+  border-radius: var(--radius-control) !important;
+  border: 1px solid rgba(111, 88, 62, 0.16) !important;
+  background: rgba(255,255,255,0.72) !important;
+  color: var(--text) !important;
+  font-size: 15.5px !important;
+  font-weight: 600 !important;
+  padding: 14px 15px !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.64);
+}
+
+input:focus,
+select:focus {
+  border-color: rgba(217, 122, 24, 0.55) !important;
+  box-shadow: 0 0 0 4px var(--accent-soft) !important;
+}
+
+button,
+.welcome-btn {
+  border-radius: var(--radius-control) !important;
+  min-height: 50px;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.015em;
+  background: #211d19 !important;
+  color: #fffaf2 !important;
+  box-shadow: 0 14px 26px rgba(33, 29, 25, 0.16) !important;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 32px rgba(33, 29, 25, 0.18) !important;
+}
+
+button.secondary {
+  background: rgba(255,255,255,0.68) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--line) !important;
+  box-shadow: var(--shadow-soft) !important;
+}
+
+button.danger {
+  background: rgba(154, 74, 63, 0.10) !important;
+  color: var(--danger) !important;
+  box-shadow: none !important;
+}
+
+.test-badge,
+.welcome-badge,
+.safe-history-badge,
+.history-badge {
+  background: var(--accent-soft) !important;
+  color: #a45c16 !important;
+  border: 1px solid rgba(217, 122, 24, 0.16);
+  font-size: 11.5px !important;
+  font-weight: 900 !important;
+}
+
+.time {
+  font-size: clamp(64px, 18vw, 82px) !important;
+  line-height: 0.95 !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.065em !important;
+  color: var(--text) !important;
+}
+
+.message,
+.helper,
+.safe-history-empty,
+.history-empty {
+  background: rgba(255, 247, 235, 0.74) !important;
+  color: var(--muted) !important;
+  border: 1px solid rgba(111, 88, 62, 0.08);
+  border-radius: 20px !important;
+  font-size: 14.5px !important;
+  line-height: 1.55 !important;
+}
+
+.step,
+.safe-history-item,
+.history-item,
+.safe-progress-box,
+.safe-settings-row,
+.account-row,
+.stat-item {
+  background: rgba(255,255,255,0.66) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 22px !important;
+  box-shadow: 0 8px 20px rgba(55, 39, 22, 0.045);
+}
+
+.step.active {
+  background: rgba(255, 244, 228, 0.92) !important;
+  border-color: rgba(217, 122, 24, 0.34) !important;
+  box-shadow: 0 12px 25px rgba(217, 122, 24, 0.12) !important;
+}
+
+.step-title,
+.safe-history-title,
+.history-title,
+.safe-settings-text strong,
+.account-row-text strong {
+  font-size: 14.5px !important;
+  font-weight: 800 !important;
+  color: var(--text) !important;
+}
+
+.step-sub,
+.safe-history-meta,
+.history-meta,
+.safe-settings-text span,
+.account-row-text span {
+  font-size: 12.5px !important;
+  color: var(--muted) !important;
+}
+
+.check,
+.dot {
+  border-color: rgba(217, 122, 24, 0.35) !important;
+  background: rgba(255,255,255,0.72) !important;
+  color: #a45c16 !important;
+}
+
+.task-row.done .check,
+.step.done .dot {
+  background: var(--success) !important;
+  border-color: var(--success) !important;
+  color: white !important;
+}
+
+.safe-bottom-nav {
+  background: rgba(24, 22, 20, 0.82) !important;
+  backdrop-filter: blur(22px) saturate(1.18) !important;
+  border-top: 1px solid rgba(255,255,255,0.10) !important;
+}
+
+.safe-nav-btn {
+  min-height: 56px !important;
+  border-radius: 20px !important;
+  color: rgba(255,255,255,0.72) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.safe-nav-btn.active {
+  color: #ffd3a0 !important;
+  background: rgba(217, 122, 24, 0.18) !important;
+}
+
+body.safe-dark-mode {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(217, 122, 24, 0.20) 0, transparent 34%),
+    linear-gradient(180deg, #141210 0%, #25211d 100%) !important;
+  color: #fff8ee !important;
+}
+
+body.safe-dark-mode .card,
+body.safe-dark-mode .account-sheet,
+body.safe-dark-mode .progress-modal,
+body.safe-dark-mode .step,
+body.safe-dark-mode .safe-history-item,
+body.safe-dark-mode .history-item,
+body.safe-dark-mode .safe-progress-box,
+body.safe-dark-mode .safe-settings-row,
+body.safe-dark-mode .stat-item {
+  background: rgba(39, 35, 31, 0.86) !important;
+  border-color: rgba(255,255,255,0.09) !important;
+}
+
+body.safe-dark-mode h1,
+body.safe-dark-mode .title,
+body.safe-dark-mode .time,
+body.safe-dark-mode .step-title,
+body.safe-dark-mode .safe-page-title h2,
+body.safe-dark-mode .safe-account-hero h2 {
+  color: #fff8ee !important;
+}
+
+body.safe-dark-mode input,
+body.safe-dark-mode select {
+  background: rgba(20, 18, 16, 0.76) !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  color: #fff8ee !important;
+}
+
+body.safe-dark-mode .message,
+body.safe-dark-mode .helper,
+body.safe-dark-mode .safe-history-empty,
+body.safe-dark-mode .history-empty {
+  background: rgba(255,255,255,0.065) !important;
+  color: #d2c6b8 !important;
+}
+
+@media (max-width: 420px) {
+  body {
+    padding: 15px !important;
+  }
+
+  .card {
+    padding: 18px !important;
+  }
+
+  header h1 {
+    font-size: 38px !important;
+  }
+
+  .welcome-content h1 {
+    font-size: 49px !important;
+  }
+
+  .grid {
+    gap: 9px !important;
+  }
+
+  .task-row {
+    grid-template-columns: 32px 1fr 44px !important;
+  }
+}
+
+  
+
+    /* Professional compact typography patch v2
+       Goal: calmer, sellable, less oversized UI without touching app logic. */
+    :root {
+      --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-display: "Fraunces", Georgia, serif;
+      --ink: #29241f;
+      --muted: #756b60;
+      --soft-muted: #8a8075;
+      --surface: rgba(255, 255, 255, 0.88);
+      --surface-solid: #fffdf9;
+      --line: rgba(92, 74, 55, 0.11);
+      --brand: #29241f;
+      --accent: #b47a37;
+    }
+
+    html {
+      font-size: 15px !important;
+    }
+
+    * {
+      font-family: var(--font-body) !important;
+    }
+
+    body {
+      padding: 14px !important;
+      font-size: 14px !important;
+      line-height: 1.45 !important;
+      color: var(--ink) !important;
+      background:
+        radial-gradient(circle at 12% 0%, rgba(228, 193, 148, 0.34) 0, transparent 34%),
+        linear-gradient(180deg, #f8f3eb 0%, #efe6dc 100%) !important;
+      -webkit-font-smoothing: antialiased !important;
+      text-rendering: geometricPrecision !important;
+    }
+
+    .app {
+      max-width: 414px !important;
+      padding-bottom: 92px !important;
+    }
+
+    header {
+      padding: 10px 2px 14px !important;
+    }
+
+    .date,
+    .eyebrow-small,
+    .welcome-badge {
+      font-size: 10.5px !important;
+      letter-spacing: .09em !important;
+      text-transform: uppercase !important;
+      font-weight: 800 !important;
+      color: var(--soft-muted) !important;
+    }
+
+    header h1,
+    .welcome-content h1,
+    .safe-page-title h2,
+    .safe-account-hero h2,
+    .account-sheet-title h2,
+    .modal-head h2 {
+      font-family: var(--font-display) !important;
+      font-weight: 760 !important;
+      letter-spacing: -0.055em !important;
+      color: var(--ink) !important;
+    }
+
+    header h1 {
+      font-size: clamp(28px, 8.3vw, 34px) !important;
+      line-height: .98 !important;
+      margin-bottom: 8px !important;
+      max-width: 360px !important;
+    }
+
+    .welcome-content h1 {
+      font-size: clamp(34px, 10vw, 42px) !important;
+      line-height: .95 !important;
+      margin-bottom: 16px !important;
+    }
+
+    .safe-page-title h2,
+    .safe-account-hero h2,
+    .account-sheet-title h2,
+    .modal-head h2 {
+      font-size: clamp(30px, 8.8vw, 38px) !important;
+      line-height: .98 !important;
+      margin-bottom: 7px !important;
+    }
+
+    .sub,
+    .welcome-content p,
+    .safe-page-title p,
+    .safe-account-hero p,
+    .account-sheet-title p {
+      font-size: 13.5px !important;
+      line-height: 1.55 !important;
+      font-weight: 450 !important;
+      color: var(--muted) !important;
+      letter-spacing: -0.01em !important;
+    }
+
+    .welcome-content p {
+      font-size: 15px !important;
+      max-width: 300px !important;
+    }
+
+    .test-badge {
+      margin-top: 10px !important;
+      padding: 6px 10px !important;
+      font-size: 10px !important;
+      letter-spacing: .08em !important;
+      font-weight: 800 !important;
+      background: rgba(41, 36, 31, 0.92) !important;
+    }
+
+    .card,
+    .mobile-status,
+    .account-sheet,
+    .progress-modal {
+      border-radius: 24px !important;
+      padding: 16px !important;
+      margin-bottom: 12px !important;
+      background: var(--surface) !important;
+      border: 1px solid var(--line) !important;
+      box-shadow: 0 16px 42px rgba(54, 39, 24, 0.085) !important;
+    }
+
+    .title {
+      font-size: 15.5px !important;
+      line-height: 1.2 !important;
+      font-weight: 760 !important;
+      margin-bottom: 11px !important;
+      letter-spacing: -0.025em !important;
+      color: var(--ink) !important;
+    }
+
+    .hint {
+      font-size: 10.5px !important;
+      font-weight: 700 !important;
+      color: var(--soft-muted) !important;
+    }
+
+    .label {
+      margin: 12px 0 6px !important;
+      font-size: 11.5px !important;
+      font-weight: 750 !important;
+      letter-spacing: .01em !important;
+      color: #5f554b !important;
+    }
+
+    input,
+    select {
+      min-height: 44px !important;
+      padding: 11px 12px !important;
+      border-radius: 14px !important;
+      font-size: 13.5px !important;
+      line-height: 1.25 !important;
+      font-weight: 500 !important;
+      background: var(--surface-solid) !important;
+      border-color: rgba(92, 74, 55, 0.16) !important;
+    }
+
+    button,
+    .welcome-btn,
+    .tiny-btn,
+    .safe-nav-btn {
+      font-size: 13px !important;
+      font-weight: 750 !important;
+      letter-spacing: -0.01em !important;
+      border-radius: 15px !important;
+      padding: 12px 14px !important;
+      min-height: 43px !important;
+      box-shadow: 0 10px 20px rgba(43, 36, 31, 0.10) !important;
+    }
+
+    button.secondary,
+    button.danger,
+    .tiny-btn,
+    .safe-settings-row,
+    .account-row {
+      box-shadow: none !important;
+    }
+
+    .task-row {
+      grid-template-columns: 28px 1fr 38px !important;
+      gap: 8px !important;
+      margin-bottom: 8px !important;
+    }
+
+    .check {
+      width: 28px !important;
+      height: 28px !important;
+      border-radius: 10px !important;
+      font-size: 13px !important;
+    }
+
+    .icon-btn {
+      width: 38px !important;
+      height: 38px !important;
+      border-radius: 13px !important;
+    }
+
+    .helper,
+    .message,
+    #safeLastSessionText.helper,
+    .history-empty,
+    .safe-history-empty {
+      font-size: 12.5px !important;
+      line-height: 1.48 !important;
+      padding: 11px 12px !important;
+      border-radius: 16px !important;
+      color: var(--muted) !important;
+      background: rgba(245, 236, 222, 0.72) !important;
+    }
+
+    .phase {
+      font-size: 11px !important;
+      letter-spacing: .11em !important;
+      font-weight: 800 !important;
+      margin-bottom: 6px !important;
+      color: #8b6b45 !important;
+    }
+
+    .time {
+      font-family: var(--font-body) !important;
+      font-size: clamp(46px, 14vw, 56px) !important;
+      line-height: 1 !important;
+      font-weight: 800 !important;
+      letter-spacing: -0.06em !important;
+      margin: 8px 0 10px !important;
+    }
+
+    .steps {
+      gap: 8px !important;
+      margin-top: 12px !important;
+    }
+
+    .step {
+      border-radius: 15px !important;
+      padding: 10px 11px !important;
+      gap: 9px !important;
+    }
+
+    .dot {
+      width: 25px !important;
+      height: 25px !important;
+      border-radius: 9px !important;
+      font-size: 12px !important;
+      font-weight: 800 !important;
+    }
+
+    .step-title {
+      font-size: 12.5px !important;
+      line-height: 1.2 !important;
+      font-weight: 750 !important;
+      letter-spacing: -0.01em !important;
+    }
+
+    .step-sub {
+      font-size: 11px !important;
+      line-height: 1.25 !important;
+      color: var(--soft-muted) !important;
+    }
+
+    .safe-progress-grid {
+      gap: 9px !important;
+    }
+
+    .safe-progress-box,
+    .stat-item {
+      border-radius: 18px !important;
+      padding: 13px 12px !important;
+    }
+
+    .safe-progress-box strong,
+    .stat-item strong {
+      font-family: var(--font-body) !important;
+      font-size: clamp(22px, 6.8vw, 28px) !important;
+      font-weight: 760 !important;
+      letter-spacing: -0.045em !important;
+    }
+
+    .safe-progress-box span,
+    .stat-item span {
+      font-size: 10.5px !important;
+      font-weight: 750 !important;
+      letter-spacing: .02em !important;
+      color: var(--soft-muted) !important;
+    }
+
+    .safe-history-item,
+    .history-item,
+    .safe-settings-row,
+    .account-row {
+      border-radius: 16px !important;
+      padding: 12px !important;
+    }
+
+    .safe-history-title,
+    .history-title,
+    .safe-settings-text strong,
+    .account-row-text strong {
+      font-size: 12.5px !important;
+      line-height: 1.25 !important;
+      font-weight: 760 !important;
+      letter-spacing: -0.01em !important;
+    }
+
+    .safe-history-meta,
+    .history-meta,
+    .safe-settings-text span,
+    .account-row-text span {
+      font-size: 11px !important;
+      line-height: 1.35 !important;
+      color: var(--soft-muted) !important;
+    }
+
+    .safe-history-badge,
+    .history-badge,
+    .safe-settings-value,
+    .account-value {
+      font-size: 11.5px !important;
+      font-weight: 750 !important;
+    }
+
+    .safe-account-avatar,
+    .account-sheet-avatar {
+      width: 58px !important;
+      height: 58px !important;
+      border-radius: 20px !important;
+      font-size: 23px !important;
+    }
+
+    .safe-settings-icon,
+    .account-row-icon {
+      width: 32px !important;
+      height: 32px !important;
+      border-radius: 12px !important;
+      font-size: 16px !important;
+    }
+
+    .safe-bottom-nav {
+      padding: 8px 14px calc(8px + env(safe-area-inset-bottom)) !important;
+      gap: 5px !important;
+      background: rgba(35, 31, 28, 0.94) !important;
+    }
+
+    .safe-nav-btn {
+      min-height: 52px !important;
+      padding: 7px 5px !important;
+      font-size: 10.5px !important;
+      border-radius: 16px !important;
+      box-shadow: none !important;
+    }
+
+    .safe-nav-btn .nav-icon {
+      font-size: 18px !important;
+    }
+
+    .welcome-screen {
+      padding: 22px !important;
+    }
+
+    .welcome-badge {
+      padding: 7px 11px !important;
+      margin-bottom: 18px !important;
+    }
+
+    .welcome-btn {
+      min-height: 52px !important;
+      border-radius: 18px !important;
+      font-size: 14px !important;
+    }
+
+    @media (max-width: 420px) {
+      body { padding: 13px !important; }
+      .card { padding: 15px !important; border-radius: 22px !important; }
+      .safe-page-title h2,
+      .safe-account-hero h2 { font-size: 32px !important; }
+      .safe-progress-grid { grid-template-columns: 1fr 1fr !important; }
+      .safe-progress-box { display: block !important; }
+      .safe-progress-box span { text-align: left !important; white-space: normal !important; margin-top: 5px !important; }
+    }
+
+    @media (max-width: 360px) {
+      html { font-size: 14px !important; }
+      header h1 { font-size: 29px !important; }
+      .welcome-content h1 { font-size: 34px !important; }
+      .time { font-size: 46px !important; }
+      .safe-progress-grid { grid-template-columns: 1fr !important; }
+    
+
+/* ===== FINAL PRODUCTION POLISH ===== */
+.test-badge { display: none !important; }
+body { font-size: 14.5px !important; }
+header h1 { font-size: clamp(30px, 8vw, 36px) !important; }
+.welcome-content h1 { font-size: clamp(36px, 10vw, 46px) !important; }
+.safe-page-title h2, .safe-account-hero h2, .account-sheet-title h2, .modal-head h2 { font-size: clamp(30px, 8vw, 37px) !important; }
+.card, .mobile-status, .account-sheet, .progress-modal { border-radius: 24px !important; padding: 16px !important; }
+.title { font-size: 16px !important; }
+input, select, button { font-size: 13.5px !important; }
+.time { font-size: clamp(48px, 14vw, 58px) !important; }
+.message, .helper { font-size: 12.8px !important; }
+.safe-nav-btn { font-size: 10.5px !important; }
+@media (max-width: 420px) {
+  .safe-progress-grid { grid-template-columns: 1fr 1fr !important; }
+  .safe-progress-box { display: block !important; }
+}
+
+
+/* Final copy polish: shorter labels and subtler helper notes */
+.label {
+  margin: 10px 0 6px !important;
+  font-size: 11px !important;
+  letter-spacing: .02em !important;
+}
+.helper {
+  font-size: 12px !important;
+  padding: 10px 12px !important;
+  opacity: .88;
+}
+.sub {
+  max-width: 330px !important;
+}
+
+
+
+    /* ===== SAFE TASK LOCK PATCH =====
+       Keeps task editing/deleting disabled while a focus session is active.
+       Visual only; timer and sync logic stay untouched.
+    */
+    .task-row.session-locked input {
+      opacity: 0.72;
+      cursor: not-allowed;
+    }
+
+    .task-row.session-locked .icon-btn {
+      opacity: 0.45;
+      cursor: not-allowed;
+      pointer-events: none;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    .task-row.session-locked input:focus {
+      box-shadow: none !important;
+    }
+
+</style>
+
+<style>
+/* spacing consistency patch */
+.label + select,
+.label + input {
+  margin-bottom: 10px !important;
+}
+
+.helper,
+.message {
+  margin-top: -2px !important;
+  margin-bottom: 12px !important;
+}
+
+.helper {
+  font-size: 12px !important;
+  padding: 10px 12px !important;
+}
+
+#focusDurationHelper,
+.focus-duration-helper {
+  margin-top: 6px !important;
+  margin-bottom: 14px !important;
+}
+</style>
+
+</head>
+
+<body>
+
+  <div id="welcomeScreen" class="welcome-screen" aria-label="Welcome to Guided Focus">
+    <div class="welcome-content">
+      <div class="welcome-badge">Guided Focus</div>
+
+      <h1>
+        One task.<br>
+        One calm step at a time.
+      </h1>
+
+      <p>
+        Built for days when starting feels hard.
+        A calmer way to start, continue, and finish your work.
+      </p>
+
+      <button id="enterAppBtn" class="welcome-btn" type="button">
+        Start focusing
+      </button>
+    </div>
+  </div>
+
+  <main class="app">
+    <header>
+      <div class="date" id="date"></div>
+      <h1>Guided Focus Planner</h1>
+      <p class="sub">Plan your focus. Finish one step at a time.</p>
+    </header>
+
+    <section class="mobile-status">
+      <div class="status-row">
+        <div class="user-mini">
+          <div class="user-avatar" id="userAvatar">G</div>
+          <div>
+            <div class="user-name" id="userName">Guest mode</div>
+            <div class="user-sub" id="userEmail">Sign in to sync</div>
+          </div>
+        </div>
+
+        <div class="status-actions">
+          <button id="googleLoginBtn" class="tiny-btn google-tiny" type="button">Google</button>
+          <button id="logoutBtn" class="tiny-btn" type="button" style="display:none;">Logout</button>
+          <button id="openProgressBtn" class="tiny-btn" type="button">Progress</button>
+          <button class="tiny-btn" onclick="enableNotifications()" type="button">
+            <span id="notificationDot" class="dot-status"></span>
+            Notify
+          </button>
+        </div>
+      </div>
+
+      <div id="authStatus" class="mini-message"></div>
+      <div id="notificationStatus" class="hidden-status">Notifications off</div>
+    </section>
+
+
+    <section class="card">
+      <div class="title">
+        Today’s Tasks
+        <span class="hint">start with 3</span>
+      </div>
+
+      <button class="danger" onclick="clearEverything()">Clear Everything</button>
+      <button class="secondary" onclick="resetCompletedTasks()">Reset Completed Tasks</button>
+
+      <div style="height:14px"></div>
+      <div id="tasks"></div>
+
+      <button id="addTaskBtn" class="secondary" onclick="addTaskField()">+ Add Task</button>
+      <button id="saveTasksBtn" class="secondary" onclick="saveTasks()">Save Tasks</button>
+    </section>
+
+    <section class="card">
+      <div class="title">
+        Start a Focus Flow
+        <span class="hint">guided session</span>
+      </div>
+
+      <div class="label">Task</div>
+      <select id="taskSelect"></select>
+
+      <div class="label">Focus duration</div>
+      <select id="durationSelect"></select>
+      <div class="helper">
+        Your focus time is divided into 3 rounds.
+      </div>
+
+      <div class="label">Break between rounds</div>
+      <select id="breakDurationSelect"></select>
+
+      <div class="label">Break between tasks</div>
+      <select id="taskPauseSelect"></select>
+      <div class="helper">
+        Next task starts after your chosen break.
+      </div>
+
+      <div class="grid">
+        <button onclick="startPreparation()">Start 5-Minute Preparation</button>
+        <button class="secondary" onclick="skipPreparation()">Skip Preparation</button>
+      </div>
+    </section>
+
+    <section class="card timer">
+      <div class="phase" id="phaseLabel">Not started</div>
+      <div class="time" id="timer">00:00</div>
+      <button id="skipBtn" class="secondary" onclick="skipCurrentPause()" disabled>Skip Break</button>
+      
+
+      <div class="message" id="message">Choose a task and start when you’re ready.</div>
+
+      <div class="grid">
+        <button id="mainBtn" onclick="toggleTimer()" disabled>Pause</button>
+        <button class="secondary" onclick="resetFlow()">Restart Session</button>
+      </div>
+      
+
+      <div class="steps">
+        <div class="step" id="step1">
+          <div class="dot">1</div>
+          <div>
+            <div class="step-title">Focus Round 1</div>
+            <div class="step-sub">Start gently</div>
+          </div>
+        </div>
+
+        <div class="step" id="break1">
+          <div class="dot">☕</div>
+          <div>
+            <div class="step-title">Break</div>
+            <div class="step-sub">Selected break time</div>
+          </div>
+        </div>
+
+        <div class="step" id="step2">
+          <div class="dot">2</div>
+          <div>
+            <div class="step-title">Focus Round 2</div>
+            <div class="step-sub">Keep going</div>
+          </div>
+        </div>
+
+        <div class="step" id="break2">
+          <div class="dot">☕</div>
+          <div>
+            <div class="step-title">Break</div>
+            <div class="step-sub">Selected break time</div>
+          </div>
+        </div>
+
+        <div class="step" id="step3">
+          <div class="dot">3</div>
+          <div>
+            <div class="step-title">Focus Round 3</div>
+            <div class="step-sub">Finish strong</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div id="progressModal" class="modal-backdrop" aria-hidden="true">
+      <div class="progress-modal" role="dialog" aria-modal="true" aria-labelledby="progressTitle">
+        <div class="modal-head">
+          <div>
+            <div class="eyebrow-small">Your focus</div>
+            <h2 id="progressTitle">Progress</h2>
+          </div>
+          <button id="closeProgressBtn" class="modal-close" type="button">×</button>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-item">
+            <strong id="todaySessions">0</strong>
+            <span>sessions</span>
+          </div>
+          <div class="stat-item">
+            <strong id="todayMinutes">0</strong>
+            <span>minutes</span>
+          </div>
+          <div class="stat-item">
+            <strong id="todayRounds">0</strong>
+            <span>rounds</span>
+          </div>
+          <div class="stat-item">
+            <strong id="streakDays">0</strong>
+            <span>streak 🔥</span>
+          </div>
+        </div>
+
+        <div class="helper" id="lastSessionText">Complete a focus flow to start tracking progress.</div>
+        <button id="resetProgressBtn" class="danger" type="button">Reset Progress</button>
+
+        <div class="modal-section-title">Focus History</div>
+        <div id="historyList" class="history-list">
+          <div class="history-empty">Complete a focus flow to see history here.</div>
+        </div>
+      </div>
+    </div>
+
+    <section id="safeProgressPage" class="safe-page">
+      <div class="safe-page-title">
+        <h2>Progress</h2>
+        <p>A calm look at the time you gave to yourself.</p>
+      </div>
+
+      <section class="card">
+        <div class="title">
+          Gentle Progress
+          <span class="hint">no pressure</span>
+        </div>
+
+        <div class="message" id="safeMotivationText">You showed up today. That counts.</div>
+
+        <div class="safe-progress-grid">
+          <div class="safe-progress-box">
+            <strong id="safeTodayMinutes">0m</strong>
+            <span>today</span>
+          </div>
+          <div class="safe-progress-box">
+            <strong id="safeWeekMinutes">0m</strong>
+            <span>this week</span>
+          </div>
+          <div class="safe-progress-box">
+            <strong id="safeMonthMinutes">0m</strong>
+            <span>this month</span>
+          </div>
+          <div class="safe-progress-box">
+            <strong id="safeFocusedDays">0</strong>
+            <span>focused days</span>
+          </div>
+        </div>
+
+        <div class="helper" id="safeLastSessionText">Complete a focus flow to start tracking progress.</div>
+        <button id="safeResetProgressBtn" class="danger" type="button">Reset Progress</button>
+      </section>
+
+      <section class="card">
+        <div class="title">
+          Recent Focus
+          <span class="hint">latest 5</span>
+        </div>
+        <div id="safeHistoryList" class="safe-history-list">
+          <div class="safe-history-empty">Complete a focus flow to see recent sessions here.</div>
+        </div>
+      </section>
+    </section>
+
+    <section id="safeAccountPage" class="safe-page">
+      <div class="safe-account-hero">
+        <div>
+          <h2 id="safeAccountTitle">Account</h2>
+          <p id="safeAccountSub">Manage your account and settings.</p>
+        </div>
+        <div id="safeAccountAvatar" class="safe-account-avatar">G</div>
+      </div>
+
+      <section class="card">
+        <div class="title">Account</div>
+
+        <div class="safe-settings-list">
+          <button id="safeLoginBtn" class="safe-settings-row" type="button">
+            <div class="safe-settings-left">
+              <div class="safe-settings-icon">👤</div>
+              <div class="safe-settings-text">
+                <strong>Sign in / Sign up</strong>
+                <span>Sync your data across devices</span>
+              </div>
+            </div>
+            <div class="safe-settings-value">›</div>
+          </button>
+
+          <button id="safeLogoutBtn" class="safe-settings-row" type="button" style="display:none;">
+            <div class="safe-settings-left">
+              <div class="safe-settings-icon">↪</div>
+              <div class="safe-settings-text">
+                <strong>Log out</strong>
+                <span>Sign out from your account</span>
+              </div>
+            </div>
+            <div class="safe-settings-value danger">›</div>
+          </button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="title">Settings</div>
+
+        <div class="safe-settings-list">
+          <button id="safeNotifyBtn" class="safe-settings-row" type="button">
+            <div class="safe-settings-left">
+              <div class="safe-settings-icon">🔔</div>
+              <div class="safe-settings-text">
+                <strong>Notifications</strong>
+                <span>Allow break alerts</span>
+              </div>
+            </div>
+            <div id="safeNotifyValue" class="safe-settings-value">Off</div>
+          </button>
+
+          <button id="safeDarkBtn" class="safe-settings-row" type="button">
+            <div class="safe-settings-left">
+              <div class="safe-settings-icon">🌙</div>
+              <div class="safe-settings-text">
+                <strong>Dark Mode</strong>
+                <span>Switch to night theme</span>
+              </div>
+            </div>
+            <div id="safeDarkValue" class="safe-settings-value">Off</div>
+          </button>
+        </div>
+      </section>
+    </section>
+
+    <nav class="safe-bottom-nav">
+      <button id="safeHomeNav" class="safe-nav-btn active" type="button">
+        <span class="nav-icon">⌂</span>
+        <span>Home</span>
+      </button>
+      <button id="safeProgressNav" class="safe-nav-btn" type="button">
+        <span class="nav-icon">▥</span>
+        <span>Progress</span>
+      </button>
+      <button id="safeAccountNav" class="safe-nav-btn" type="button">
+        <span class="nav-icon">◎</span>
+        <span>Account</span>
+      </button>
+    </nav>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    const SUPABASE_URL = "https://bawzwtapmbbnzxifrjkh.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_hKA3xXvcepSQRA4MWVAIZQ_LSZ8Ng67";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storage: window.localStorage,
+        storageKey: "guided-focus-planner-auth"
+      }
+    });
+    let currentUser = null;
+    let loadingFromCloud = false;
+    let syncTimer = null;
+
+    const TEST_MODE = false;
+    const TEST_PREP_SECONDS = 300;
+    const TEST_FOCUS_SECONDS = 0;
+    const TEST_BREAK_SECONDS = 0;
+
+    const tasksWrap = document.getElementById("tasks");
+    const taskSelect = document.getElementById("taskSelect");
+    const durationSelect = document.getElementById("durationSelect");
+    const breakDurationSelect = document.getElementById("breakDurationSelect");
+    const taskPauseSelect = document.getElementById("taskPauseSelect");
+    const timerEl = document.getElementById("timer");
+    const phaseLabel = document.getElementById("phaseLabel");
+    const messageEl = document.getElementById("message");
+    const mainBtn = document.getElementById("mainBtn");
+    const skipBtn = document.getElementById("skipBtn");
+    const addTaskBtn = document.getElementById("addTaskBtn");
+    const saveTasksBtn = document.getElementById("saveTasksBtn");
+    const googleLoginBtn = document.getElementById("googleLoginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const authStatus = document.getElementById("authStatus");
+    const userAvatar = document.getElementById("userAvatar");
+    const userName = document.getElementById("userName");
+    const userEmail = document.getElementById("userEmail");
+    const todaySessionsEl = document.getElementById("todaySessions");
+    const todayMinutesEl = document.getElementById("todayMinutes");
+    const todayRoundsEl = document.getElementById("todayRounds");
+    const lastSessionText = document.getElementById("lastSessionText");
+    const historyList = document.getElementById("historyList");
+    const streakDaysEl = document.getElementById("streakDays");
+    const openProgressBtn = document.getElementById("openProgressBtn");
+    const closeProgressBtn = document.getElementById("closeProgressBtn");
+    const progressModal = document.getElementById("progressModal");
+    const resetProgressBtn = document.getElementById("resetProgressBtn");
+    const safeResetProgressBtn = document.getElementById("safeResetProgressBtn");
+
+    const TASKS_KEY = "guidedTasks";
+    const COMPLETED_KEY = "guidedCompleted";
+    if (!localStorage.getItem(TASKS_KEY) && localStorage.getItem("guidedTasksTest")) {
+      localStorage.setItem(TASKS_KEY, localStorage.getItem("guidedTasksTest"));
+    }
+    if (!localStorage.getItem(COMPLETED_KEY) && localStorage.getItem("guidedCompletedTest")) {
+      localStorage.setItem(COMPLETED_KEY, localStorage.getItem("guidedCompletedTest"));
+    }
+    let tasks = JSON.parse(localStorage.getItem(TASKS_KEY)) || ["", "", ""];
+    let completed = JSON.parse(localStorage.getItem(COMPLETED_KEY)) || Array(tasks.length).fill(false);
+
+    let flow = [];
+    let currentIndex = -1;
+    let secondsLeft = 0;
+    let interval = null;
+    let running = false;
+    let selectedTaskIndex = null;
+    let phaseEndAt = null;
+    let taskPauseInfo = null;
+    let restoredSessionJustLoaded = false;
+    let allTasksCompletedLocked = false;
+
+    document.getElementById("date").textContent = new Date().toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric"
+    });
+
+    function normalizeCompleted() {
+      while (completed.length < tasks.length) completed.push(false);
+      if (completed.length > tasks.length) completed = completed.slice(0, tasks.length);
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, function(m) {
+        return {
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#039;"
+        }[m];
+      });
+    }
+
+    function areTasksLocked() {
+      return running || currentIndex >= 0 || currentIndex === -2;
+    }
+
+    function showTasksLockedMessage() {
+      if (messageEl) {
+        messageEl.textContent = "Tasks are locked during an active focus session.";
+      }
+    }
+
+
+    function showAuthNote(text, type = "") {
+      if (!authStatus) return;
+      authStatus.textContent = text;
+      authStatus.className = "mini-message show" + (type ? " " + type : "");
+      if (!type) {
+        setTimeout(function() {
+          authStatus.className = "mini-message";
+        }, 3000);
+      }
+    }
+
+    function renderAvatar(user) {
+      const meta = user.user_metadata || {};
+      const avatarUrl = meta.avatar_url || meta.picture;
+      const name = meta.full_name || meta.name || user.email || "User";
+      const initial = name.trim().charAt(0).toUpperCase() || "✓";
+
+      if (avatarUrl) {
+        userAvatar.innerHTML = '<img src="' + avatarUrl + '" alt="User avatar">';
+      } else {
+        userAvatar.textContent = initial;
+      }
+    }
+
+    function renderAuth(user) {
+      currentUser = user || null;
+
+      if (user) {
+        const meta = user.user_metadata || {};
+        userName.textContent = meta.full_name || meta.name || "Signed in";
+        userEmail.textContent = "Loading...";
+        googleLoginBtn.style.display = "none";
+        logoutBtn.style.display = "inline-flex";
+        renderAvatar(user);
+        loadTasksFromCloud();
+        loadFocusStats();
+        loadFocusHistory();
+      } else {
+        userAvatar.textContent = "G";
+        userName.textContent = "Guest mode";
+        userEmail.textContent = "Sign in to sync";
+        loadFocusStats();
+        loadFocusHistory();
+        googleLoginBtn.style.display = "inline-flex";
+        logoutBtn.style.display = "none";
+      }
+
+      if (typeof window.safeSyncAccountPage === "function") {
+        window.safeSyncAccountPage();
+      }
+    }
+
+    async function syncTasksToCloud() {
+      if (!currentUser || loadingFromCloud) return;
+
+      clearTimeout(syncTimer);
+      syncTimer = setTimeout(async function() {
+        try {
+          const cleanTasks = tasks
+            .map(function(title, index) {
+              return {
+                user_id: currentUser.id,
+                title: String(title || "").trim(),
+                completed: Boolean(completed[index])
+              };
+            })
+            .filter(function(item) {
+              return item.title.length > 0;
+            });
+
+          await supabaseClient.from("tasks").delete().eq("user_id", currentUser.id);
+
+          if (cleanTasks.length) {
+            const result = await supabaseClient.from("tasks").insert(cleanTasks);
+            if (result.error) throw result.error;
+          }
+
+          userEmail.textContent = "Synced";
+        } catch (error) {
+          console.error("Cloud sync error:", error);
+          showAuthNote("Sync failed: " + error.message, "error");
+        }
+      }, 450);
+    }
+
+    async function loadTasksFromCloud() {
+      if (!currentUser) return;
+
+      try {
+        loadingFromCloud = true;
+
+        const result = await supabaseClient
+          .from("tasks")
+          .select("title, completed, created_at")
+          .eq("user_id", currentUser.id)
+          .order("created_at", { ascending: true });
+
+        if (result.error) throw result.error;
+
+        if (result.data && result.data.length) {
+          tasks = result.data.map(function(item) { return item.title; });
+          completed = result.data.map(function(item) { return Boolean(item.completed); });
+          localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
+          localStorage.setItem(COMPLETED_KEY, JSON.stringify(completed));
+      syncTasksToCloud();
+          buildTaskInputs();
+          if (!isFocusFlowActive()) resetFlow();
+          userEmail.textContent = "Synced";
+        } else {
+          const hasLocalTasks = tasks.some(function(task) { return String(task || "").trim(); });
+          if (hasLocalTasks) {
+            await syncTasksToCloud();
+            userEmail.textContent = "Moved to cloud";
+          } else {
+            tasks = ["", "", ""];
+            completed = [false, false, false];
+            buildTaskInputs();
+            userEmail.textContent = "Ready to sync";
+          }
+        }
+      } catch (error) {
+        console.error("Cloud load error:", error);
+        showAuthNote("Load failed: " + error.message, "error");
+      } finally {
+        loadingFromCloud = false;
+      }
+    }
+
+    googleLoginBtn.addEventListener("click", async function() {
+      showAuthNote("Opening Google login...");
+
+      const result = await supabaseClient.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin + window.location.pathname.replace(/\/$/, "") + "/"
+        }
+      });
+
+      if (result.error) {
+        showAuthNote(result.error.message, "error");
+      }
+    });
+
+    logoutBtn.addEventListener("click", async function() {
+      const result = await supabaseClient.auth.signOut();
+
+      if (result.error) {
+        showAuthNote(result.error.message, "error");
+        return;
+      }
+
+      renderAuth(null);
+      showAuthNote("Logged out.");
+    });
+
+    function waitForAuth(ms) {
+      return new Promise(function(resolve) {
+        setTimeout(resolve, ms);
+      });
+    }
+
+    async function getRestoredAuthUser() {
+      // Supabase sometimes restores the OAuth session a little after the page loads,
+      // especially after a GitHub Pages refresh. Check, wait briefly, then check again.
+      let result = await supabaseClient.auth.getSession();
+      if (result.data && result.data.session && result.data.session.user) {
+        return result.data.session.user;
+      }
+
+      await waitForAuth(700);
+
+      result = await supabaseClient.auth.getSession();
+      if (result.data && result.data.session && result.data.session.user) {
+        return result.data.session.user;
+      }
+
+      const userResult = await supabaseClient.auth.getUser();
+      if (userResult.data && userResult.data.user) {
+        return userResult.data.user;
+      }
+
+      return null;
+    }
+
+    async function initAuth() {
+      if (userName) userName.textContent = "Checking sign in...";
+      if (userEmail) userEmail.textContent = "Please wait";
+      if (typeof window.safeSyncAccountPage === "function") {
+        window.safeSyncAccountPage();
+      }
+
+      const initialUser = await getRestoredAuthUser();
+      renderAuth(initialUser);
+
+      if (typeof window.safeSyncAccountPage === "function") {
+        window.safeSyncAccountPage();
+      }
+
+      supabaseClient.auth.onAuthStateChange(function(event, session) {
+        renderAuth(session ? session.user : null);
+
+        if (typeof window.safeSyncAccountPage === "function") {
+          window.safeSyncAccountPage();
+        }
+
+        if (event === "SIGNED_IN") {
+          showAuthNote("Signed in.");
+          if (window.history && window.location.hash) {
+            window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
+          }
+        }
+      });
+    }
+
+
+
+    function todayStartIso() {
+      const d = new Date();
+      d.setHours(0, 0, 0, 0);
+      return d.toISOString();
+    }
+
+    function formatSessionTime(iso) {
+      try {
+        return new Date(iso).toLocaleString(undefined, {
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+      } catch {
+        return "";
+      }
+    }
+
+    function saveFocusSessionLocally(title, minutes, rounds) {
+      const key = "guidedLocalFocusSessions";
+      const sessions = JSON.parse(localStorage.getItem(key) || "[]");
+
+      sessions.unshift({
+        task_title: title || "Focus session",
+        duration_minutes: Number(minutes || 0),
+        rounds_completed: Number(rounds || 3),
+        completed_at: new Date().toISOString()
+      });
+
+      localStorage.setItem(key, JSON.stringify(sessions.slice(0, 120)));
+    }
+
+    function getLocalFocusSessions() {
+      return JSON.parse(localStorage.getItem("guidedLocalFocusSessions") || "[]");
+    }
+
+    function renderHistory(items) {
+      if (!historyList) return;
+
+      if (!currentUser) {
+        historyList.innerHTML = '<div class="history-empty">Sign in to see your focus history.</div>';
+        return;
+      }
+
+      if (!items || !items.length) {
+        historyList.innerHTML = '<div class="history-empty">Complete a focus flow to see history here.</div>';
+        return;
+      }
+
+      historyList.innerHTML = items.slice(0, 8).map(function(item) {
+        const title = escapeHtml(item.task_title || "Focus session");
+        const minutes = Number(item.duration_minutes || 0);
+        const rounds = Number(item.rounds_completed || 0);
+        const when = formatSessionTime(item.completed_at);
+
+        return `
+          <div class="history-item">
+            <div class="history-main">
+              <div class="history-title">${title}</div>
+              <div class="history-meta">${when} · ${rounds} rounds</div>
+            </div>
+            <div class="history-badge">${minutes}m</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function loadFocusHistory() {
+      if (!currentUser) {
+        renderHistory([]);
+        return;
+      }
+
+      try {
+        const result = await supabaseClient
+          .from("focus_sessions")
+          .select("task_title, duration_minutes, rounds_completed, completed_at")
+          .eq("user_id", currentUser.id)
+          .order("completed_at", { ascending: false })
+          .limit(8);
+
+        if (result.error) throw result.error;
+        renderHistory(result.data || []);
+      } catch (error) {
+        console.error("Focus history error:", error);
+        if (historyList) {
+          historyList.innerHTML = '<div class="history-empty">Could not load focus history.</div>';
+        }
+      }
+    }
+
+    async function loadFocusStats() {
+      if (!currentUser) {
+        if (todaySessionsEl) todaySessionsEl.textContent = "0";
+        if (todayMinutesEl) todayMinutesEl.textContent = "0";
+        if (todayRoundsEl) todayRoundsEl.textContent = "0";
+        if (streakDaysEl) streakDaysEl.textContent = "0";
+        if (lastSessionText) lastSessionText.textContent = "Sign in to track focus history.";
+        renderHistory([]);
+        return;
+      }
+
+      try {
+        const result = await supabaseClient
+          .from("focus_sessions")
+          .select("task_title, duration_minutes, rounds_completed, completed_at")
+          .eq("user_id", currentUser.id)
+          .gte("completed_at", todayStartIso())
+          .order("completed_at", { ascending: false });
+
+        if (window.__focusProgressReset) {
+          if (todaySessionsEl) todaySessionsEl.textContent = "0";
+          if (todayMinutesEl) todayMinutesEl.textContent = "0";
+          if (todayRoundsEl) todayRoundsEl.textContent = "0";
+          if (streakDaysEl) streakDaysEl.textContent = "0";
+          if (lastSessionText) lastSessionText.textContent = "Progress reset successfully.";
+          renderHistory([]);
+          return;
+        }
+
+        if (result.error) throw result.error;
+
+        const sessions = result.data || [];
+        const totalMinutes = sessions.reduce(function(sum, item) {
+          return sum + Number(item.duration_minutes || 0);
+        }, 0);
+        const totalRounds = sessions.reduce(function(sum, item) {
+          return sum + Number(item.rounds_completed || 0);
+        }, 0);
+
+        const streakResult = await supabaseClient
+          .from("focus_sessions")
+          .select("completed_at")
+          .eq("user_id", currentUser.id)
+          .order("completed_at", { ascending: false });
+
+        const allSessions = (streakResult.data || []).map(function(item) {
+          const d = new Date(item.completed_at);
+          d.setHours(0,0,0,0);
+          return d.getTime();
+        });
+
+        const uniqueDays = [...new Set(allSessions)];
+        let streak = 0;
+        let cursor = new Date();
+        cursor.setHours(0,0,0,0);
+
+        while (uniqueDays.includes(cursor.getTime())) {
+          streak++;
+          cursor.setDate(cursor.getDate() - 1);
+        }
+
+        if (streakDaysEl) streakDaysEl.textContent = streak;
+
+        todaySessionsEl.textContent = sessions.length;
+        todayMinutesEl.textContent = totalMinutes;
+        todayRoundsEl.textContent = totalRounds;
+
+        if (sessions.length) {
+          lastSessionText.textContent = "Last session: " + sessions[0].task_title;
+        } else {
+          lastSessionText.textContent = "Complete a focus flow to start tracking progress.";
+        }
+      } catch (error) {
+        console.error("Focus stats error:", error);
+        if (lastSessionText) lastSessionText.textContent = "Could not load progress.";
+      }
+    }
+
+    async function saveFocusRoundProgress(roundNumber) {
+      if (selectedTaskIndex === null) return;
+
+      const baseTitle = (tasks[selectedTaskIndex] || "Focus session").trim() || "Focus session";
+      const title = baseTitle + " · Round " + Number(roundNumber || 1);
+      const selectedMinutes = Number(durationSelect.value || 0);
+      const roundMinutes = Math.max(1, Math.round(selectedMinutes / 3));
+
+      // Save every completed focus round immediately.
+      // This way Progress updates even if the user stops after round 1 or 2.
+      saveFocusSessionLocally(title, roundMinutes, 1);
+
+      try {
+        if (currentUser) {
+          const result = await supabaseClient.from("focus_sessions").insert({
+            user_id: currentUser.id,
+            task_title: title,
+            duration_minutes: roundMinutes,
+            rounds_completed: 1
+          });
+
+          if (result.error) throw result.error;
+
+          await loadFocusStats();
+          await loadFocusHistory();
+        }
+
+        if (typeof window.safeRefreshProgress === "function") {
+          await window.safeRefreshProgress();
+        }
+      } catch (error) {
+        console.error("Focus round save error:", error);
+        showAuthNote("Progress failed: " + error.message, "error");
+        if (typeof window.safeRefreshProgress === "function") {
+          await window.safeRefreshProgress();
+        }
+      }
+    }
+
+    function forceClearProgressUI() {
+      if (todaySessionsEl) todaySessionsEl.textContent = "0";
+      if (todayMinutesEl) todayMinutesEl.textContent = "0";
+      if (todayRoundsEl) todayRoundsEl.textContent = "0";
+      if (streakDaysEl) streakDaysEl.textContent = "0";
+      if (lastSessionText) lastSessionText.textContent = "Complete a focus flow to start tracking progress.";
+      if (historyList) historyList.innerHTML = '<div class="history-empty">Complete a focus flow to see history here.</div>';
+
+      const todayMinutesSafe = document.getElementById("safeTodayMinutes");
+      const weekMinutesSafe = document.getElementById("safeWeekMinutes");
+      const monthMinutesSafe = document.getElementById("safeMonthMinutes");
+      const focusedDaysSafe = document.getElementById("safeFocusedDays");
+      const motivationTextSafe = document.getElementById("safeMotivationText");
+      const lastSessionSafe = document.getElementById("safeLastSessionText");
+      const historyListSafe = document.getElementById("safeHistoryList");
+
+      if (todayMinutesSafe) todayMinutesSafe.textContent = "0 min";
+      if (weekMinutesSafe) weekMinutesSafe.textContent = "0 min";
+      if (monthMinutesSafe) monthMinutesSafe.textContent = "0 min";
+      if (focusedDaysSafe) focusedDaysSafe.textContent = "0";
+      if (motivationTextSafe) motivationTextSafe.textContent = "Progress was reset. Start again gently.";
+      if (lastSessionSafe) lastSessionSafe.textContent = "Complete one focus flow. Starting matters too.";
+      if (historyListSafe) historyListSafe.innerHTML = '<div class="safe-history-empty">Complete a focus flow to see recent sessions here.</div>';
+    }
+
+    async function resetFocusProgress() {
+      const ok = window.confirm("Reset all focus progress and history? Your tasks will stay unchanged.");
+      if (!ok) return;
+
+      localStorage.setItem("guidedLocalFocusSessions", "[]");
+      window.__focusProgressReset = true;
+      forceClearProgressUI();
+
+      try {
+        if (currentUser) {
+          const result = await supabaseClient
+            .from("focus_sessions")
+            .delete()
+            .eq("user_id", currentUser.id);
+
+          if (result.error) throw result.error;
+        }
+
+        // Keep the visible page cleared immediately, then refresh once more after
+        // Supabase has finished deleting cloud rows.
+        forceClearProgressUI();
+        setTimeout(function() {
+          forceClearProgressUI();
+        }, 350);
+
+        if (messageEl) {
+          messageEl.textContent = "Progress was reset. Your tasks are unchanged.";
+        }
+        if (typeof showAuthNote === "function") {
+          showAuthNote("Progress reset.");
+        }
+      } catch (error) {
+        console.error("Progress reset error:", error);
+        forceClearProgressUI();
+        if (typeof showAuthNote === "function") {
+          showAuthNote("Progress reset locally. Cloud reset failed: " + error.message, "error");
+        }
+      }
+    }
+
+    resetProgressBtn?.addEventListener("click", resetFocusProgress);
+    safeResetProgressBtn?.addEventListener("click", resetFocusProgress);
+
+
+
+
+
+    let focusAudioCtx = null;
+
+    function playLongFocusBeep() {
+      try {
+        focusAudioCtx = focusAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        if (focusAudioCtx.state === "suspended") {
+          focusAudioCtx.resume();
+        }
+
+        const sequence = [
+          { freq: 880, start: 0.00, duration: 0.28 },
+          { freq: 660, start: 0.34, duration: 0.28 },
+          { freq: 880, start: 0.68, duration: 0.38 }
+        ];
+
+        sequence.forEach(function(note) {
+          const oscillator = focusAudioCtx.createOscillator();
+          const gain = focusAudioCtx.createGain();
+
+          oscillator.type = "sine";
+          oscillator.frequency.setValueAtTime(note.freq, focusAudioCtx.currentTime + note.start);
+
+          gain.gain.setValueAtTime(0.0001, focusAudioCtx.currentTime + note.start);
+          gain.gain.exponentialRampToValueAtTime(0.20, focusAudioCtx.currentTime + note.start + 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.0001, focusAudioCtx.currentTime + note.start + note.duration);
+
+          oscillator.connect(gain);
+          gain.connect(focusAudioCtx.destination);
+
+          oscillator.start(focusAudioCtx.currentTime + note.start);
+          oscillator.stop(focusAudioCtx.currentTime + note.start + note.duration + 0.04);
+        });
+      } catch (error) {
+        console.warn("Beep unavailable:", error);
+      }
+    }
+
+    function vibrateFocusStep() {
+      if ("vibrate" in navigator) {
+        navigator.vibrate([250, 120, 250, 120, 350]);
+      }
+    }
+
+    function phaseEndAlert() {
+      playLongFocusBeep();
+      vibrateFocusStep();
+    }
+
+
+    function openProgressModal() {
+      if (!progressModal) return;
+      progressModal.classList.add("open");
+      progressModal.setAttribute("aria-hidden", "false");
+      loadFocusStats();
+      loadFocusHistory();
+    }
+
+    function closeProgressModal() {
+      if (!progressModal) return;
+      progressModal.classList.remove("open");
+      progressModal.setAttribute("aria-hidden", "true");
+    }
+
+    openProgressBtn?.addEventListener("click", openProgressModal);
+    closeProgressBtn?.addEventListener("click", closeProgressModal);
+    progressModal?.addEventListener("click", function(event) {
+      if (event.target === progressModal) closeProgressModal();
+    });
+    document.addEventListener("keydown", function(event) {
+      if (event.key === "Escape") closeProgressModal();
+    });
+
+
+    function buildTaskInputs() {
+      normalizeCompleted();
+      tasksWrap.innerHTML = "";
+
+      tasks.forEach(function(task, i) {
+        const locked = areTasksLocked();
+        const row = document.createElement("div");
+        row.className = "task-row" + (completed[i] ? " done" : "") + (locked ? " session-locked" : "");
+
+        row.innerHTML = `
+          <div class="check">${completed[i] ? "✓" : ""}</div>
+          <input placeholder="Task ${i + 1}" value="${escapeHtml(task || "")}" oninput="updateTask(${i}, this.value)" ${locked ? "readonly" : ""} />
+          <button class="icon-btn" onclick="removeTaskField(${i})" aria-label="Delete task" ${locked ? "disabled" : ""}>
+            <svg class="trash" viewBox="0 0 24 24">
+              <path d="M3 6h18"></path>
+              <path d="M8 6V4h8v2"></path>
+              <path d="M6 6l1 15h10l1-15"></path>
+              <path d="M10 11v6"></path>
+              <path d="M14 11v6"></path>
+            </svg>
+          </button>
+        `;
+
+        tasksWrap.appendChild(row);
+      });
+
+      refreshTaskSelect();
+    }
+
+    function updateTask(i, value) {
+      if (areTasksLocked()) {
+        showTasksLockedMessage();
+        buildTaskInputs();
+        return;
+      }
+
+      tasks[i] = value;
+      completed[i] = false;
+      saveTasks(false);
+      refreshTaskSelect();
+    }
+
+    function addTaskField() {
+      if (areTasksLocked()) {
+        showTasksLockedMessage();
+        return;
+      }
+      if (addTaskBtn && addTaskBtn.disabled) return;
+      tasks.push("");
+      completed.push(false);
+      saveTasks(false);
+      buildTaskInputs();
+    }
+
+    function removeTaskField(index) {
+      if (areTasksLocked()) {
+        showTasksLockedMessage();
+        return;
+      }
+
+      tasks.splice(index, 1);
+      completed.splice(index, 1);
+
+      if (tasks.length === 0) {
+        tasks = [""];
+        completed = [false];
+      }
+
+      saveTasks(false);
+      buildTaskInputs();
+
+      messageEl.textContent = "Task removed.";
+    }
+
+    function saveTasks(show = true) {
+      if (areTasksLocked() && show) {
+        showTasksLockedMessage();
+        return;
+      }
+      if (saveTasksBtn && saveTasksBtn.disabled && show) return;
+      normalizeCompleted();
+      localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
+      localStorage.setItem(COMPLETED_KEY, JSON.stringify(completed));
+
+      if (show) {
+        messageEl.textContent = "Tasks saved. Choose one task to begin.";
+      }
+    }
+
+    function clearEverything() {
+      if (areTasksLocked()) {
+        showTasksLockedMessage();
+        return;
+      }
+
+      clearInterval(interval);
+      localStorage.removeItem(TASKS_KEY);
+      localStorage.removeItem(COMPLETED_KEY);
+      localStorage.removeItem("guidedTasksTest");
+      localStorage.removeItem("guidedCompletedTest");
+      localStorage.removeItem(SELECTED_TASK_KEY);
+      clearActiveSession();
+
+      tasks = ["", "", ""];
+      completed = [false, false, false];
+
+      flow = [];
+      currentIndex = -1;
+      secondsLeft = 0;
+      interval = null;
+      running = false;
+      selectedTaskIndex = null;
+      allTasksCompletedLocked = false;
+
+      buildTaskInputs();
+      resetStepUI();
+
+      phaseLabel.textContent = "Not started";
+      timerEl.textContent = "00:00";
+      messageEl.textContent = "Everything is cleared. Start fresh.";
+      mainBtn.disabled = true;
+      mainBtn.textContent = "Pause";
+      skipBtn.disabled = true;
+      setPlanningControlsLocked(false);
+    }
+
+    function resetCompletedTasks() {
+      if (areTasksLocked()) {
+        showTasksLockedMessage();
+        return;
+      }
+
+      completed = tasks.map(function() {
+        return false;
+      });
+      allTasksCompletedLocked = false;
+
+      saveTasks(false);
+      buildTaskInputs();
+      resetFlow();
+
+      setPlanningControlsLocked(false);
+      messageEl.textContent = "Completed tasks reset. Your task list is ready to repeat.";
+    }
+
+    function rememberSelectedTask(index) {
+      if (index === null || typeof index === "undefined" || index === "") return;
+      localStorage.setItem(SELECTED_TASK_KEY, String(index));
+    }
+
+    function getFirstAvailableTaskValue() {
+      const firstOpen = Array.from(taskSelect.options).find(function(o) {
+        const idx = Number(o.value);
+        return o.value !== "" && !completed[idx];
+      });
+      return firstOpen ? firstOpen.value : (taskSelect.options[0] ? taskSelect.options[0].value : "");
+    }
+
+    function refreshTaskSelect() {
+      const old = taskSelect.value;
+      const remembered = localStorage.getItem(SELECTED_TASK_KEY);
+      taskSelect.innerHTML = "";
+
+      tasks.forEach(function(t, i) {
+        if (t.trim()) {
+          const opt = document.createElement("option");
+          opt.value = i;
+          opt.textContent = completed[i] ? "✓ " + t : t;
+          taskSelect.appendChild(opt);
+        }
+      });
+
+      if (!taskSelect.children.length) {
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = "Write at least one task first";
+        taskSelect.appendChild(opt);
+      }
+
+      const values = Array.from(taskSelect.options).map(function(o) { return o.value; });
+
+      if (old && values.includes(old)) {
+        taskSelect.value = old;
+      } else if (remembered && values.includes(remembered)) {
+        taskSelect.value = remembered;
+      } else {
+        taskSelect.value = getFirstAvailableTaskValue();
+      }
+
+      if (taskSelect.value !== "") rememberSelectedTask(taskSelect.value);
+    }
+
+    function buildDurationSelect() {
+      durationSelect.innerHTML = "";
+
+      const options = [
+        { label: "15 minutes", value: 15 },
+        { label: "30 minutes", value: 30 },
+        { label: "45 minutes", value: 45 },
+        { label: "60 minutes", value: 60 },
+        { label: "75 minutes", value: 75 },
+        { label: "90 minutes", value: 90 },
+        { label: "105 minutes", value: 105 },
+        { label: "120 minutes", value: 120 },
+        { label: "135 minutes", value: 135 }
+      ];
+
+      options.forEach(function(item) {
+        const opt = document.createElement("option");
+        opt.value = item.value;
+        opt.textContent = item.label;
+        durationSelect.appendChild(opt);
+      });
+
+      durationSelect.value = "45";
+    }
+
+    function buildBreakSelects() {
+      breakDurationSelect.innerHTML = "";
+      taskPauseSelect.innerHTML = "";
+
+      for (let m = 5; m <= 15; m += 5) {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = m + " minutes between focus rounds";
+        breakDurationSelect.appendChild(opt);
+      }
+
+      breakDurationSelect.value = "5";
+
+      for (let m = 15; m <= 60; m += 15) {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = m < 60 ? m + " minutes between tasks" : "1 hour between tasks";
+        taskPauseSelect.appendChild(opt);
+      }
+
+      taskPauseSelect.value = "15";
+    }
+
+    function enableNotifications() {
+      const status = document.getElementById("notificationStatus");
+
+      if (!("Notification" in window)) {
+        status.textContent = "Notifications are not supported in this browser.";
+        return;
+      }
+
+      Notification.requestPermission().then(function(permission) {
+        if (permission === "granted") {
+          status.textContent = "Notifications enabled.";
+          const nDot = document.getElementById("notificationDot");
+          if (nDot) nDot.classList.add("on");
+        } else if (permission === "denied") {
+          status.textContent = "Notifications blocked.";
+        } else {
+          status.textContent = "Notifications off.";
+        }
+      });
+    }
+
+    function sendNotification(title, body) {
+      if (!("Notification" in window)) return;
+      if (Notification.permission !== "granted") return;
+
+      new Notification(title, {
+        body: body
+      });
+    }
+
+    function hasAvailableTask() {
+      return tasks.some(function(task, index) {
+        return task.trim() && !completed[index];
+      });
+    }
+
+    function showAllTasksCompletedError() {
+      phaseLabel.textContent = "All Tasks Completed";
+      timerEl.textContent = "DONE";
+      mainBtn.disabled = true;
+      skipBtn.disabled = true;
+      messageEl.textContent =
+        "All tasks are already completed.\n\nTo start again, tap Reset Completed Tasks first.";
+    }
+
+    function setPlanningControlsLocked(locked) {
+      if (addTaskBtn) addTaskBtn.disabled = locked;
+      if (saveTasksBtn) saveTasksBtn.disabled = locked;
+      if (taskSelect) taskSelect.disabled = locked;
+      if (durationSelect) durationSelect.disabled = locked;
+      if (breakDurationSelect) breakDurationSelect.disabled = locked;
+      if (taskPauseSelect) taskPauseSelect.disabled = locked;
+      buildTaskInputs();
+    }
+
+    function isSessionActive() {
+      return currentIndex >= 0 || running;
+    }
+
+    function showSessionAlreadyRunning() {
+      messageEl.textContent = "A focus session is already running.";
+    }
+
+
+    const ACTIVE_SESSION_KEY = "guidedActiveSessionStableV2";
+    const SELECTED_TASK_KEY = "guidedSelectedTaskStableV1";
+
+    function isFocusFlowActive() {
+      return (Array.isArray(flow) && flow.length && currentIndex >= 0 && currentIndex < flow.length) || currentIndex === -2;
+    }
+
+    function saveActiveSession() {
+      if (!isFocusFlowActive()) return;
+
+      // Do not save the break between tasks. It is safer to return the user to a clean ready state after refresh.
+      if (currentIndex === -2) {
+        localStorage.removeItem(ACTIVE_SESSION_KEY);
+        return;
+      }
+
+      const state = {
+        flow: flow,
+        currentIndex: currentIndex,
+        secondsLeft: secondsLeft,
+        running: running,
+        selectedTaskIndex: selectedTaskIndex,
+        phaseEndAt: phaseEndAt,
+        taskPauseInfo: taskPauseInfo,
+        savedAt: Date.now()
+      };
+
+      localStorage.setItem(ACTIVE_SESSION_KEY, JSON.stringify(state));
+    }
+
+    function clearActiveSession() {
+      localStorage.removeItem(ACTIVE_SESSION_KEY);
+      phaseEndAt = null;
+      taskPauseInfo = null;
+    }
+
+    function applyCompletedStepsBefore(index) {
+      resetStepUI();
+      for (let i = 0; i < index; i++) {
+        if (flow[i] && flow[i].type) markDone(flow[i].type);
+      }
+    }
+
+    function restoreActiveSession() {
+      const raw = localStorage.getItem(ACTIVE_SESSION_KEY);
+      if (!raw) return false;
+
+      try {
+        const state = JSON.parse(raw);
+        if (!state || !Array.isArray(state.flow) || !state.flow.length) return false;
+
+        flow = state.flow || [];
+        currentIndex = Number(state.currentIndex);
+        selectedTaskIndex = state.selectedTaskIndex;
+        taskPauseInfo = state.taskPauseInfo || null;
+
+        running = Boolean(state.running);
+
+        if (currentIndex === -2) {
+          // Old versions could save Task Break. Ignore it on refresh.
+          clearActiveSession();
+          return false;
+
+          const savedSeconds = Math.max(1, Number(state.secondsLeft || 1));
+
+          if (taskPauseInfo && typeof taskPauseInfo.index !== "undefined") {
+            taskSelect.value = String(taskPauseInfo.index);
+          }
+
+          const getRestoredNextName = function() {
+            if (taskPauseInfo && taskPauseInfo.name) return taskPauseInfo.name;
+            return taskSelect.options[taskSelect.selectedIndex]
+              ? taskSelect.options[taskSelect.selectedIndex].textContent.replace("✓ ", "")
+              : "next task";
+          };
+
+          if (running && state.phaseEndAt) {
+            const remaining = Math.ceil((Number(state.phaseEndAt) - Date.now()) / 1000);
+
+            if (remaining <= 0) {
+              resetStepUI();
+              finishRestoredTaskPause();
+              setTimeout(phaseEndAlert, 250);
+              restoredSessionJustLoaded = true;
+              return true;
+            }
+
+            secondsLeft = remaining;
+            phaseEndAt = Date.now() + secondsLeft * 1000;
+          } else {
+            secondsLeft = savedSeconds;
+            phaseEndAt = null;
+            running = false;
+          }
+
+          setPlanningControlsLocked(true);
+          resetStepUI();
+
+          phaseLabel.textContent = "Task Break";
+          mainBtn.disabled = false;
+          mainBtn.textContent = running ? "Pause" : "Resume";
+          skipBtn.disabled = false;
+
+          const nextName = getRestoredNextName();
+          const pauseMinutes = taskPauseInfo && taskPauseInfo.minutes ? taskPauseInfo.minutes : Number(taskPauseSelect.value || 15);
+
+          messageEl.textContent =
+            "Task break restored.\n\nTake your " + pauseMinutes + "-minute break.\n\nNext task: " + nextName + ".";
+
+          updateTimer();
+          restoredSessionJustLoaded = true;
+
+          if (running) {
+            startClock(true);
+          } else {
+            saveActiveSession();
+          }
+
+          return true;
+        }
+
+        if (currentIndex < 0 || currentIndex >= flow.length) {
+          clearActiveSession();
+          return false;
+        }
+        const savedSeconds = Math.max(1, Number(state.secondsLeft || flow[currentIndex].seconds || 1));
+
+        if (running && state.phaseEndAt) {
+          const remaining = Math.ceil((Number(state.phaseEndAt) - Date.now()) / 1000);
+          secondsLeft = Math.max(1, remaining);
+          phaseEndAt = Date.now() + secondsLeft * 1000;
+        } else {
+          secondsLeft = savedSeconds;
+          phaseEndAt = null;
+          running = false;
+        }
+
+        setPlanningControlsLocked(true);
+        applyCompletedStepsBefore(currentIndex);
+
+        const p = flow[currentIndex];
+        phaseLabel.textContent = p.label;
+        messageEl.textContent = running ? p.msg : "Session restored. Tap Resume when you’re ready.";
+        mainBtn.disabled = false;
+        mainBtn.textContent = running ? "Pause" : "Resume";
+        skipBtn.disabled = !(p.type === "break1" || p.type === "break2");
+        setActiveStep(p.type);
+        updateTimer();
+
+        restoredSessionJustLoaded = true;
+
+        if (running) {
+          startClock(true);
+        } else {
+          saveActiveSession();
+        }
+
+        return true;
+      } catch (error) {
+        console.warn("Restore session failed:", error);
+        clearActiveSession();
+        return false;
+      }
+    }
+
+    function recalcTimerAfterSleep() {
+      if (!running || !phaseEndAt || !isFocusFlowActive()) return;
+
+      secondsLeft = Math.max(0, Math.ceil((phaseEndAt - Date.now()) / 1000));
+      updateTimer();
+
+      if (secondsLeft <= 0) {
+        clearInterval(interval);
+        if (currentIndex === -2) {
+          finishRestoredTaskPause();
+        } else {
+          completePhase();
+        }
+      } else {
+        saveActiveSession();
+      }
+    }
+
+    document.addEventListener("visibilitychange", function() {
+      if (document.visibilityState === "hidden") {
+        saveActiveSession();
+      } else {
+        recalcTimerAfterSleep();
+      }
+    });
+
+    window.addEventListener("pagehide", saveActiveSession);
+    window.addEventListener("beforeunload", saveActiveSession);
+    window.addEventListener("focus", recalcTimerAfterSleep);
+
+
+    function createFlow(includePreparation) {
+      if (running && currentIndex >= 0) {
+  const type = flow[currentIndex]?.type;
+  if (type !== "prepare") {
+    showSessionAlreadyRunning();
+    return false;
+  }
+}
+
+      if (!hasAvailableTask()) {
+        allTasksCompletedLocked = true;
+        showAllTasksCompletedError();
+        return false;
+      }
+
+      if (taskSelect.value === "") return false;
+
+      if (completed[Number(taskSelect.value)]) {
+        allTasksCompletedLocked = true;
+        showAllTasksCompletedError();
+        return false;
+      }
+
+      allTasksCompletedLocked = false;
+
+      clearInterval(interval);
+      clearActiveSession();
+      interval = null;
+      running = false;
+      currentIndex = -1;
+      secondsLeft = 0;
+      timerEl.textContent = "00:00";
+      phaseLabel.textContent = "Not started";
+      mainBtn.disabled = true;
+      mainBtn.textContent = "Pause";
+      skipBtn.disabled = true;
+      resetStepUI();
+
+      selectedTaskIndex = Number(taskSelect.value);
+
+      const totalMinutes = Number(durationSelect.value);
+      const selectedBreakMinutes = Number(breakDurationSelect.value);
+      const realPart = Math.round((totalMinutes * 60) / 3);
+      const part = TEST_MODE ? TEST_FOCUS_SECONDS : realPart;
+      const breakSeconds = TEST_MODE ? TEST_BREAK_SECONDS : selectedBreakMinutes * 60;
+      const prepSeconds = TEST_MODE ? TEST_PREP_SECONDS : 300;
+
+      flow = [];
+
+      if (includePreparation) {
+        flow.push({
+          type: "prepare",
+          seconds: prepSeconds,
+          label: "Prepare",
+          msg: "You have 5 minutes to get ready. Open what you need. No pressure — just prepare."
+        });
+      }
+
+      flow.push(
+        {
+          type: "focus1",
+          seconds: part,
+          label: "Focus Round 1",
+          msg: "Just start. You don’t need to feel ready. Starting is enough."
+        },
+        {
+          type: "break1",
+          seconds: breakSeconds,
+          label: "Break",
+          msg: "Good job. Take your selected break. Breathe, drink water, and come back gently."
+        },
+        {
+          type: "focus2",
+          seconds: part,
+          label: "Focus Round 2",
+          msg: "You already started. Keep going with one small step."
+        },
+        {
+          type: "break2",
+          seconds: breakSeconds,
+          label: "Break",
+          msg: "Nice work. Take your selected break. You’re closer than you think."
+        },
+        {
+          type: "focus3",
+          seconds: part,
+          label: "Focus Round 3",
+          msg: "Final round. Finish what you can. Progress counts."
+        }
+      );
+
+      resetStepUI();
+      currentIndex = 0;
+      setPlanningControlsLocked(true);
+      loadPhase();
+      saveActiveSession();
+      startClock();
+
+      return true;
+    }
+
+    function startPreparation() {
+      createFlow(true);
+    }
+
+    function skipPreparation() {
+      createFlow(false);
+    }
+
+    function loadPhase() {
+      clearInterval(interval);
+      running = false;
+
+      const p = flow[currentIndex];
+
+      secondsLeft = p.seconds;
+      phaseEndAt = null;
+      phaseLabel.textContent = p.label;
+      messageEl.textContent = p.msg;
+      mainBtn.disabled = false;
+      mainBtn.textContent = "Pause";
+      skipBtn.disabled = !(p.type === "break1" || p.type === "break2");
+
+      setActiveStep(p.type);
+      updateTimer();
+    }
+
+    function startClock(keepExistingEndTime = false) {
+      running = true;
+      mainBtn.textContent = "Pause";
+      clearInterval(interval);
+
+      if (!keepExistingEndTime || !phaseEndAt) {
+        phaseEndAt = Date.now() + secondsLeft * 1000;
+      }
+
+      saveActiveSession();
+
+      interval = setInterval(function() {
+        if (phaseEndAt) {
+          secondsLeft = Math.max(0, Math.ceil((phaseEndAt - Date.now()) / 1000));
+        } else {
+          secondsLeft = Math.max(0, secondsLeft - 1);
+        }
+
+        updateTimer();
+
+        if (secondsLeft <= 0) {
+          clearInterval(interval);
+          if (currentIndex === -2) {
+            phaseEndAlert();
+            finishRestoredTaskPause();
+          } else {
+            completePhase();
+          }
+        }
+      }, 1000);
+    }
+
+    function toggleTimer() {
+      if (currentIndex < 0 && currentIndex !== -2) return;
+
+      if (running) {
+        clearInterval(interval);
+        if (phaseEndAt) {
+          secondsLeft = Math.max(1, Math.ceil((phaseEndAt - Date.now()) / 1000));
+        }
+        running = false;
+        phaseEndAt = null;
+        mainBtn.textContent = "Resume";
+        messageEl.textContent = "Paused. Restart gently when you’re ready.";
+        saveActiveSession();
+      } else {
+        messageEl.textContent = flow[currentIndex].msg;
+        startClock();
+      }
+    }
+
+    function completePhase() {
+      const type = flow[currentIndex].type;
+
+      phaseEndAlert();
+      markDone(type);
+
+      if (type === "prepare") {
+        messageEl.textContent = "Preparation done. Now begin the first focus round.";
+      } else if (type === "focus1") {
+        saveFocusRoundProgress(1);
+        messageEl.textContent = "Round 1 complete. You started — that matters.";
+      } else if (type === "break1") {
+        messageEl.textContent = "Break finished. Ready for Focus Round 2?";
+      } else if (type === "focus2") {
+        saveFocusRoundProgress(2);
+        messageEl.textContent = "Round 2 complete. Great progress. One more round.";
+      } else if (type === "break2") {
+        messageEl.textContent = "Break finished. Ready for Focus Round 3?";
+      } else if (type === "focus3") {
+        saveFocusRoundProgress(3);
+        finishTask();
+        return;
+      }
+
+      currentIndex++;
+      saveActiveSession();
+
+      setTimeout(function() {
+        loadPhase();
+        saveActiveSession();
+        startClock();
+      }, 1200);
+    }
+
+    function markDone(type) {
+      const ids = {
+        focus1: "step1",
+        break1: "break1",
+        focus2: "step2",
+        break2: "break2",
+        focus3: "step3"
+      };
+
+      if (ids[type]) {
+        const el = document.getElementById(ids[type]);
+        el.classList.add("done");
+        el.querySelector(".dot").textContent = "✓";
+      }
+    }
+
+    function setActiveStep(type) {
+      document.querySelectorAll(".step").forEach(function(s) {
+        s.classList.remove("active");
+      });
+
+      const ids = {
+        focus1: "step1",
+        break1: "break1",
+        focus2: "step2",
+        break2: "break2",
+        focus3: "step3"
+      };
+
+      if (ids[type]) {
+        document.getElementById(ids[type]).classList.add("active");
+      }
+    }
+
+    function resetStepUI() {
+      document.querySelectorAll(".step").forEach(function(s) {
+        s.classList.remove("active", "done");
+      });
+
+      document.querySelector("#step1 .dot").textContent = "1";
+      document.querySelector("#step2 .dot").textContent = "2";
+      document.querySelector("#step3 .dot").textContent = "3";
+      document.querySelector("#break1 .dot").textContent = "☕";
+      document.querySelector("#break2 .dot").textContent = "☕";
+    }
+
+    function getNextTaskInfo() {
+      for (let i = 0; i < tasks.length; i++) {
+        if (i !== selectedTaskIndex && tasks[i].trim() && !completed[i]) {
+          return {
+            index: i,
+            name: tasks[i].trim()
+          };
+        }
+      }
+
+      return null;
+    }
+
+
+    function finishRestoredTaskPause() {
+      clearInterval(interval);
+      running = false;
+      clearActiveSession();
+
+      timerEl.textContent = "READY";
+      phaseLabel.textContent = "Next Task Ready";
+      mainBtn.disabled = true;
+      mainBtn.textContent = "Pause";
+      skipBtn.disabled = true;
+      setPlanningControlsLocked(false);
+
+      const nextName = taskPauseInfo && taskPauseInfo.name ? taskPauseInfo.name : (
+        taskSelect.options[taskSelect.selectedIndex]
+          ? taskSelect.options[taskSelect.selectedIndex].textContent.replace("✓ ", "")
+          : "next task"
+      );
+
+      messageEl.textContent =
+        "Your break is finished.\n\nI’m here. Ready for the " + nextName + "?\n\nIf you’re ready, tap Start 5-Minute Preparation.";
+
+      taskPauseInfo = null;
+    }
+
+
+    function startTaskPause(nextTaskInfo) {
+      const selectedTaskPauseMinutes = Number(taskPauseSelect.value);
+      const pauseSeconds = TEST_MODE ? 8 : selectedTaskPauseMinutes * 60;
+
+      clearInterval(interval);
+      running = true;
+      secondsLeft = pauseSeconds;
+      phaseEndAt = Date.now() + secondsLeft * 1000;
+      timerEl.textContent = "00:00";
+      phaseLabel.textContent = "Task Break";
+      mainBtn.disabled = false;
+      mainBtn.textContent = "Pause";
+      skipBtn.disabled = false;
+      currentIndex = -2;
+      rememberSelectedTask(nextTaskInfo.index);
+      taskPauseInfo = {
+        index: nextTaskInfo.index,
+        name: nextTaskInfo.name,
+        minutes: selectedTaskPauseMinutes
+      };
+
+      messageEl.textContent =
+        "1 task done.\n\nThat’s how progress happens.\n\nTake a " + selectedTaskPauseMinutes + "-minute break. I’ll be waiting for you in " + selectedTaskPauseMinutes + " minutes.\n\nNext task: " + nextTaskInfo.name + ".";
+
+      updateTimer();
+      localStorage.removeItem(ACTIVE_SESSION_KEY);
+
+      interval = setInterval(function() {
+        secondsLeft = Math.max(0, Math.ceil((phaseEndAt - Date.now()) / 1000));
+        updateTimer();
+
+        if (secondsLeft <= 0) {
+          phaseEndAlert();
+          finishRestoredTaskPause();
+        }
+      }, 1000);
+    }
+
+    function finishTask() {
+      clearInterval(interval);
+      running = false;
+      clearActiveSession();
+
+      phaseLabel.textContent = "Completed";
+      timerEl.textContent = "DONE";
+      mainBtn.disabled = true;
+
+      if (selectedTaskIndex !== null) {
+        completed[selectedTaskIndex] = true;
+        saveTasks(false);
+        buildTaskInputs();
+      }
+
+      markDone("focus3");
+
+      const nextTaskInfo = getNextTaskInfo();
+
+      if (nextTaskInfo) {
+        taskSelect.value = String(nextTaskInfo.index);
+        rememberSelectedTask(nextTaskInfo.index);
+        startTaskPause(nextTaskInfo);
+      } else {
+        allTasksCompletedLocked = true;
+        setPlanningControlsLocked(false);
+        messageEl.textContent =
+          "All tasks done.\n\nYou showed up, you stayed, and you finished.\n\nThat’s real progress. Be proud of yourself.\n\nTo repeat your tasks, tap Reset Completed Tasks.";
+      }
+    }
+
+    function skipCurrentPause() {
+      if (skipBtn.disabled) return;
+
+      clearInterval(interval);
+      running = false;
+
+      if (currentIndex === -2) {
+        clearActiveSession();
+        timerEl.textContent = "READY";
+        phaseLabel.textContent = "Next Task Ready";
+        mainBtn.disabled = true;
+        mainBtn.textContent = "Pause";
+        skipBtn.disabled = true;
+
+        const nextTaskName = taskSelect.options[taskSelect.selectedIndex]
+          ? taskSelect.options[taskSelect.selectedIndex].textContent.replace("✓ ", "")
+          : "next task";
+
+        setPlanningControlsLocked(false);
+
+        messageEl.textContent =
+          "Break skipped.\n\nI’m here. Ready for the " + nextTaskName + "?\n\nIf you’re ready, tap Start 5-Minute Preparation.";
+        return;
+      }
+
+      const type = flow[currentIndex] ? flow[currentIndex].type : "";
+
+      if (type === "break1" || type === "break2") {
+        markDone(type);
+        currentIndex++;
+
+        if (currentIndex < flow.length) {
+          loadPhase();
+          saveActiveSession();
+          startClock();
+        }
+      }
+    }
+
+    function resetFlow() {
+      if (allTasksCompletedLocked && !hasAvailableTask()) {
+        showAllTasksCompletedError();
+        return;
+      }
+
+      clearInterval(interval);
+      clearActiveSession();
+
+      interval = null;
+      running = false;
+      currentIndex = -1;
+      secondsLeft = 0;
+
+      phaseLabel.textContent = "Not started";
+      timerEl.textContent = "00:00";
+      messageEl.textContent = "Start again. No pressure.";
+
+      mainBtn.disabled = true;
+      mainBtn.textContent = "Pause";
+      skipBtn.disabled = true;
+
+      resetStepUI();
+      setPlanningControlsLocked(false);
+    }
+
+    function updateTimer() {
+      if (timerEl.textContent === "DONE" || timerEl.textContent === "READY") return;
+
+      const m = Math.floor(secondsLeft / 60);
+      const s = secondsLeft % 60;
+
+      timerEl.textContent =
+        String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+    }
+
+    if (taskSelect) {
+      taskSelect.addEventListener("change", function() {
+        rememberSelectedTask(taskSelect.value);
+      });
+    }
+
+    buildTaskInputs();
+    buildDurationSelect();
+    buildBreakSelects();
+    restoreActiveSession();
+
+
+    ;(function setupRealBottomPages() {
+      const homeNav = document.getElementById("safeHomeNav");
+      const progressNav = document.getElementById("safeProgressNav");
+      const accountNav = document.getElementById("safeAccountNav");
+      const progressPage = document.getElementById("safeProgressPage");
+      const accountPage = document.getElementById("safeAccountPage");
+
+      const loginBtnSafe = document.getElementById("safeLoginBtn");
+      const logoutBtnSafe = document.getElementById("safeLogoutBtn");
+      const notifyBtnSafe = document.getElementById("safeNotifyBtn");
+      const darkBtnSafe = document.getElementById("safeDarkBtn");
+      const darkValueSafe = document.getElementById("safeDarkValue");
+      const notifyValueSafe = document.getElementById("safeNotifyValue");
+      const accountTitleSafe = document.getElementById("safeAccountTitle");
+      const accountSubSafe = document.getElementById("safeAccountSub");
+      const accountAvatarSafe = document.getElementById("safeAccountAvatar");
+
+      const todayMinutesSafe = document.getElementById("safeTodayMinutes");
+      const weekMinutesSafe = document.getElementById("safeWeekMinutes");
+      const monthMinutesSafe = document.getElementById("safeMonthMinutes");
+      const focusedDaysSafe = document.getElementById("safeFocusedDays");
+      const motivationTextSafe = document.getElementById("safeMotivationText");
+      const lastSessionSafe = document.getElementById("safeLastSessionText");
+      const historyListSafe = document.getElementById("safeHistoryList");
+
+      function markHomeContent() {
+        const main = document.querySelector("main.app");
+        if (!main) return;
+        Array.from(main.children).forEach(function(child) {
+          if (
+            child.id === "safeProgressPage" ||
+            child.id === "safeAccountPage" ||
+            child.classList.contains("safe-bottom-nav") ||
+            child.id === "progressModal" ||
+            child.id === "focusAlertModal" ||
+            child.id === "safeAccountSheet"
+          ) return;
+          child.classList.add("home-content");
+        });
+      }
+
+      function setActiveNav(target) {
+        localStorage.setItem("safeActivePage", target);
+        homeNav?.classList.toggle("active", target === "home");
+        progressNav?.classList.toggle("active", target === "progress");
+        accountNav?.classList.toggle("active", target === "account");
+
+        document.body.classList.toggle("safe-page-home", target === "home");
+        document.body.classList.toggle("safe-page-progress", target === "progress");
+        document.body.classList.toggle("safe-page-account", target === "account");
+
+        progressPage?.classList.toggle("active", target === "progress");
+        accountPage?.classList.toggle("active", target === "account");
+      }
+
+      function escapeSafe(text) {
+        return String(text || "").replace(/[&<>"']/g, function(ch) {
+          return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[ch];
+        });
+      }
+
+      function todayStartIsoSafe() {
+        const d = new Date();
+        d.setHours(0,0,0,0);
+        return d.toISOString();
+      }
+
+      function formatSafeTime(iso) {
+        try {
+          return new Date(iso).toLocaleString(undefined, {
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+          });
+        } catch {
+          return "";
+        }
+      }
+
+      function getCurrentUserSafe() {
+        try { return currentUser || null; } catch { return null; }
+      }
+
+      function startOfTodayMsSafe() {
+        const d = new Date();
+        d.setHours(0,0,0,0);
+        return d.getTime();
+      }
+
+      function startOfWeekMsSafe() {
+        const d = new Date();
+        d.setHours(0,0,0,0);
+        const day = d.getDay() || 7;
+        d.setDate(d.getDate() - day + 1);
+        return d.getTime();
+      }
+
+      function startOfMonthMsSafe() {
+        const d = new Date();
+        d.setHours(0,0,0,0);
+        d.setDate(1);
+        return d.getTime();
+      }
+
+      function minutesLabelSafe(minutes) {
+        const total = Math.max(0, Number(minutes || 0));
+        const hours = Math.floor(total / 60);
+        const mins = total % 60;
+        if (hours && mins) return hours + "h " + mins + "m";
+        if (hours) return hours + "h";
+        return mins + "m";
+      }
+
+      function pickMotivationSafe(todayMinutes, weekMinutes, focusedDays) {
+        if (todayMinutes > 0) return "You showed up today. Small steps still count.";
+        if (weekMinutes > 0) return "Progress can be quiet. You are still moving.";
+        if (focusedDays > 0) return "You have already begun. Come back gently when you are ready.";
+        return "One calm session is enough to start.";
+      }
+
+      async function loadSafeProgress() {
+        const user = getCurrentUserSafe();
+
+        try {
+          let allSessions = getLocalFocusSessions();
+
+          if (user) {
+            const all = await supabaseClient
+              .from("focus_sessions")
+              .select("task_title, duration_minutes, rounds_completed, completed_at")
+              .eq("user_id", user.id)
+              .order("completed_at", { ascending: false })
+              .limit(120);
+
+            if (all.error) throw all.error;
+
+            const cloudSessions = all.data || [];
+            const seen = new Set();
+            allSessions = cloudSessions.concat(allSessions).filter(function(item) {
+              const key = [item.task_title, item.duration_minutes, item.completed_at].join("|");
+              if (seen.has(key)) return false;
+              seen.add(key);
+              return true;
+            }).sort(function(a, b) {
+              return new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime();
+            });
+          }
+          const todayStart = startOfTodayMsSafe();
+          const weekStart = startOfWeekMsSafe();
+          const monthStart = startOfMonthMsSafe();
+
+          const sumSince = function(startMs) {
+            return allSessions.reduce(function(sum, item) {
+              const sessionTime = new Date(item.completed_at).getTime();
+              if (sessionTime >= startMs) return sum + Number(item.duration_minutes || 0);
+              return sum;
+            }, 0);
+          };
+
+          const todayMinutes = sumSince(todayStart);
+          const weekMinutes = sumSince(weekStart);
+          const monthMinutes = sumSince(monthStart);
+
+          const focusedDays = new Set(
+            allSessions
+              .filter(function(item) { return new Date(item.completed_at).getTime() >= monthStart; })
+              .map(function(item) {
+                const d = new Date(item.completed_at);
+                d.setHours(0,0,0,0);
+                return d.getTime();
+              })
+          ).size;
+
+          if (todayMinutesSafe) todayMinutesSafe.textContent = minutesLabelSafe(todayMinutes);
+          if (weekMinutesSafe) weekMinutesSafe.textContent = minutesLabelSafe(weekMinutes);
+          if (monthMinutesSafe) monthMinutesSafe.textContent = minutesLabelSafe(monthMinutes);
+          if (focusedDaysSafe) focusedDaysSafe.textContent = focusedDays;
+          if (motivationTextSafe) motivationTextSafe.textContent = pickMotivationSafe(todayMinutes, weekMinutes, focusedDays);
+
+          if (lastSessionSafe) {
+            lastSessionSafe.textContent = allSessions.length
+              ? "Last calm focus: " + (allSessions[0].task_title || "Focus session")
+              : "Complete one focus flow. Starting matters too.";
+          }
+
+          if (historyListSafe) {
+            if (!allSessions.length) {
+              historyListSafe.innerHTML = '<div class="safe-history-empty">Complete a focus flow to see recent sessions here.</div>';
+            } else {
+              historyListSafe.innerHTML = allSessions.slice(0,5).map(function(item) {
+                return `
+                  <div class="safe-history-item">
+                    <div>
+                      <div class="safe-history-title">${escapeSafe(item.task_title || "Focus session")}</div>
+                      <div class="safe-history-meta">${formatSafeTime(item.completed_at)} · ${Number(item.rounds_completed || 1)} round</div>
+                    </div>
+                    <div class="safe-history-badge">${minutesLabelSafe(item.duration_minutes || 0)}</div>
+                  </div>
+                `;
+              }).join("");
+            }
+          }
+        } catch (error) {
+          console.error("Safe progress load failed:", error);
+          if (historyListSafe) historyListSafe.innerHTML = '<div class="safe-history-empty">Could not load progress.</div>';
+        }
+      }
+
+      window.safeRefreshProgress = loadSafeProgress;
+
+      function syncAccountPage() {
+        const user = getCurrentUserSafe();
+
+        if (user) {
+          const meta = user.user_metadata || {};
+          const name = meta.full_name || meta.name || user.email || "Account";
+          const email = user.email || "Signed in";
+          const avatarUrl = meta.avatar_url || meta.picture;
+          const initial = String(name).trim().charAt(0).toUpperCase() || "G";
+          if (accountTitleSafe) accountTitleSafe.textContent = "Hey, " + name + "!";
+          if (accountSubSafe) accountSubSafe.textContent = email;
+          if (accountAvatarSafe) {
+            accountAvatarSafe.innerHTML = avatarUrl
+              ? '<img src="' + escapeSafe(avatarUrl) + '" alt="User avatar">'
+              : escapeSafe(initial);
+          }
+          if (loginBtnSafe) loginBtnSafe.style.display = "none";
+          if (logoutBtnSafe) logoutBtnSafe.style.display = "flex";
+        } else {
+          if (accountTitleSafe) accountTitleSafe.textContent = "Account";
+          if (accountSubSafe) accountSubSafe.textContent = "Sign in to sync across devices.";
+          if (accountAvatarSafe) accountAvatarSafe.textContent = "G";
+          if (loginBtnSafe) loginBtnSafe.style.display = "flex";
+          if (logoutBtnSafe) logoutBtnSafe.style.display = "none";
+        }
+
+        if (notifyValueSafe && "Notification" in window && Notification.permission === "granted") {
+          notifyValueSafe.textContent = "On";
+          notifyValueSafe.classList.add("on");
+        }
+      }
+
+      window.safeSyncAccountPage = syncAccountPage;
+
+      function applySafeDarkMode(isDark) {
+        document.body.classList.toggle("safe-dark-mode", isDark);
+        localStorage.setItem("safeDarkMode", isDark ? "on" : "off");
+        if (darkValueSafe) {
+          darkValueSafe.textContent = isDark ? "On" : "Off";
+          darkValueSafe.classList.toggle("on", isDark);
+        }
+      }
+
+      homeNav?.addEventListener("click", function() {
+        setActiveNav("home");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+
+      progressNav?.addEventListener("click", function() {
+        setActiveNav("progress");
+        loadSafeProgress();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+
+      accountNav?.addEventListener("click", function() {
+        syncAccountPage();
+        setActiveNav("account");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+
+      loginBtnSafe?.addEventListener("click", function() {
+        document.getElementById("googleLoginBtn")?.click();
+      });
+
+      logoutBtnSafe?.addEventListener("click", function() {
+        document.getElementById("logoutBtn")?.click();
+        setTimeout(syncAccountPage, 500);
+      });
+
+      notifyBtnSafe?.addEventListener("click", function() {
+        enableNotifications();
+        setTimeout(syncAccountPage, 500);
+      });
+
+      darkBtnSafe?.addEventListener("click", function() {
+        applySafeDarkMode(!document.body.classList.contains("safe-dark-mode"));
+      });
+
+      markHomeContent();
+      applySafeDarkMode(localStorage.getItem("safeDarkMode") === "on");
+      syncAccountPage();
+
+      const savedSafePage = localStorage.getItem("safeActivePage") || "home";
+      const initialSafePage = ["home", "progress", "account"].includes(savedSafePage) ? savedSafePage : "home";
+      if (initialSafePage === "progress") loadSafeProgress();
+      if (initialSafePage === "account") syncAccountPage();
+      setActiveNav(initialSafePage);
+
+      window.addEventListener("focus", syncAccountPage);
+      document.addEventListener("visibilitychange", function() {
+        if (document.visibilityState === "visible") syncAccountPage();
+      });
+    })();
+
+    // Start auth only after safeSyncAccountPage has been registered.
+    initAuth();
+
+  
+
+    // Daily welcome screen: shows once per day on the first app open
+    const welcomeScreen = document.getElementById("welcomeScreen");
+    const enterAppBtn = document.getElementById("enterAppBtn");
+    const WELCOME_SEEN_DATE_KEY = "guidedWelcomeSeenDate";
+
+    function getTodayKey() {
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return year + "-" + month + "-" + day;
+    }
+
+    function shouldShowWelcome() {
+      return localStorage.getItem(WELCOME_SEEN_DATE_KEY) !== getTodayKey();
+    }
+
+    function hideWelcome() {
+      if (!welcomeScreen) return;
+      welcomeScreen.classList.add("welcome-hidden");
+
+      setTimeout(function() {
+        welcomeScreen.style.display = "none";
+      }, 260);
+
+      localStorage.setItem(WELCOME_SEEN_DATE_KEY, getTodayKey());
+      localStorage.removeItem("guidedWelcomeSeen");
+    }
+
+    if (welcomeScreen && !shouldShowWelcome()) {
+      welcomeScreen.style.display = "none";
+    }
+
+    if (enterAppBtn) {
+      enterAppBtn.addEventListener("click", hideWelcome);
+    }
+
+  </script>
+</body>
+</html>
